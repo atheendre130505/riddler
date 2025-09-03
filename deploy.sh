@@ -1,0 +1,95 @@
+#!/bin/bash
+
+# Smart Content Agent - GitHub Pages Deployment Script
+
+echo "🚀 Deploying Smart Content Agent to GitHub Pages..."
+
+# Create docs directory if it doesn't exist
+mkdir -p docs
+
+# Copy static files to docs directory
+cp -r templates/* docs/ 2>/dev/null || true
+cp -r static docs/ 2>/dev/null || true
+
+# Create a simple landing page for GitHub Pages
+cat > docs/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Content Agent - RAG + MCP Powered Learning Platform</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; color: white; }
+        .header h1 { font-size: 3rem; font-weight: 700; margin-bottom: 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .header p { font-size: 1.2rem; opacity: 0.9; font-weight: 300; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-bottom: 40px; }
+        .feature-card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; transition: transform 0.3s ease; }
+        .feature-card:hover { transform: translateY(-5px); }
+        .feature-icon { font-size: 3rem; color: #667eea; margin-bottom: 20px; }
+        .feature-card h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 15px; color: #2d3748; }
+        .feature-card p { color: #718096; line-height: 1.6; }
+        .demo-section { background: white; border-radius: 15px; padding: 40px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; }
+        .demo-section h2 { font-size: 2rem; font-weight: 600; margin-bottom: 20px; color: #2d3748; }
+        .demo-section p { color: #718096; margin-bottom: 30px; font-size: 1.1rem; }
+        .btn { display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 1.1rem; transition: transform 0.3s ease; margin: 10px; }
+        .btn:hover { transform: translateY(-2px); }
+        .footer { text-align: center; color: white; margin-top: 40px; padding: 20px; }
+        .footer a { color: white; text-decoration: none; }
+        .footer a:hover { text-decoration: underline; }
+        @media (max-width: 768px) { .header h1 { font-size: 2rem; } .features { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
+            <p>RAG + MCP Powered Learning Platform with Advanced AI Models</p>
+        </div>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-robot"></i></div>
+                <h3>Powerful AI Models</h3>
+                <p>Gemini 1.5 Pro, Mistral Large, and Hugging Face models for advanced content analysis.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-search"></i></div>
+                <h3>Advanced RAG System</h3>
+                <p>168+ document chunks stored in ChromaDB with semantic search capabilities.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-comments"></i></div>
+                <h3>Interactive Q&A</h3>
+                <p>Ask learning questions about your content with confidence scoring.</p>
+            </div>
+        </div>
+        <div class="demo-section">
+            <h2><i class="fas fa-rocket"></i> Try It Now!</h2>
+            <p>Experience the power of advanced AI with RAG and MCP integration.</p>
+            <a href="https://github.com/atheendre130505/riddler" class="btn"><i class="fab fa-github"></i> View on GitHub</a>
+            <a href="https://github.com/atheendre130505/riddler#installation" class="btn"><i class="fas fa-download"></i> Get Started</a>
+        </div>
+        <div class="footer">
+            <p><i class="fas fa-code"></i> Built with ❤️ using the most powerful free AI models available</p>
+            <p><a href="https://github.com/atheendre130505/riddler">GitHub Repository</a> | <a href="https://github.com/atheendre130505/riddler/issues">Report Issues</a></p>
+        </div>
+    </div>
+</body>
+</html>
+EOF
+
+echo "✅ Static files prepared for GitHub Pages"
+echo "📁 Files created in docs/ directory"
+echo "🌐 Ready for GitHub Pages deployment!"
+echo ""
+echo "Next steps:"
+echo "1. Commit and push these changes"
+echo "2. Go to your repository Settings > Pages"
+echo "3. Select 'Deploy from a branch' and choose 'main' branch"
+echo "4. Select '/docs' as the source folder"
+echo "5. Your site will be available at: https://atheendre130505.github.io/riddler/"
