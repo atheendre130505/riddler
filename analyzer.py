@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ContentAnalyzer:
     """
     Handles content analysis using free AI providers
-    Supports Google Gemini, Perplexity (free tier), and Hugging Face models
+    Supports Google Gemini, Mistral, and Hugging Face models
     Generates summaries, quiz questions, and extracts key concepts
     """
     
@@ -23,7 +23,7 @@ class ContentAnalyzer:
         Initialize the analyzer with free AI provider, MCP, and RAG
         
         Args:
-            provider: AI provider ("gemini", "perplexity", "huggingface")
+            provider: AI provider ("gemini", "mistral", "huggingface")
             api_key: API key (if not provided, will use environment variable)
             enable_mcp: Enable Model Context Protocol
             enable_rag: Enable Retrieval-Augmented Generation
@@ -70,11 +70,6 @@ class ContentAnalyzer:
                 "model": "mistral-large-latest",
                 "headers": {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
             },
-            "perplexity": {
-                "url": "https://api.perplexity.ai/chat/completions",
-                "model": "llama-3.1-sonar-small-128k-online",
-                "headers": {"Authorization": f"Bearer {self.api_key}"}
-            },
             "huggingface": {
                 "url": "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
                 "headers": {"Authorization": f"Bearer {self.api_key}"}
@@ -86,7 +81,6 @@ class ContentAnalyzer:
         key_mapping = {
             "gemini": "GOOGLE_API_KEY",
             "mistral": "MISTRAL_API_KEY",
-            "perplexity": "PERPLEXITY_API_KEY",
             "huggingface": "HUGGINGFACE_API_KEY"
         }
         return os.getenv(key_mapping.get(self.provider, "GOOGLE_API_KEY"))
@@ -168,8 +162,6 @@ class ContentAnalyzer:
             return self._call_gemini_api(prompt, max_tokens, temperature)
         elif self.provider == "mistral":
             return self._call_mistral_api(prompt, max_tokens, temperature)
-        elif self.provider == "perplexity":
-            return self._call_perplexity_api(prompt, max_tokens, temperature)
         elif self.provider == "huggingface":
             return self._call_huggingface_api(prompt, max_tokens, temperature)
         else:
@@ -241,12 +233,11 @@ class ContentAnalyzer:
         try:
             import mistralai
             from mistralai.client import MistralClient
-            from mistralai.models.chat_completion import ChatMessage
             
             client = MistralClient(api_key=self.api_key)
             
             messages = [
-                ChatMessage(role="user", content=prompt)
+                {"role": "user", "content": prompt}
             ]
             
             response = client.chat(
@@ -282,31 +273,6 @@ class ContentAnalyzer:
         data = response.json()
         return data["choices"][0]["message"]["content"]
     
-    def _call_perplexity_api(self, prompt: str, max_tokens: int, temperature: float) -> str:
-        """Call Perplexity API (free tier)"""
-        config = self.configs["perplexity"]
-        
-        payload = {
-            "model": config["model"],
-            "messages": [
-                {"role": "system", "content": "You are an expert content analyst who provides clear, accurate responses."},
-                {"role": "user", "content": prompt}
-            ],
-            "max_tokens": max_tokens,
-            "temperature": temperature
-        }
-        
-        response = requests.post(
-            config["url"],
-            headers=config["headers"],
-            json=payload,
-            timeout=30
-        )
-        
-        response.raise_for_status()
-        data = response.json()
-        
-        return data["choices"][0]["message"]["content"]
     
     def _call_huggingface_api(self, prompt: str, max_tokens: int, temperature: float) -> str:
         """Call Hugging Face API (free tier)"""
