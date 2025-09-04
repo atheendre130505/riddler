@@ -255,7 +255,7 @@ async def enhanced_ask_question(question: str = Form(...), session_id: str = For
             "question_type": result["question_type"],
             "confidence": result["confidence"],
             "rag_context_used": result["rag_context_used"],
-            "conversation_context_used": result["conversation_context_used"],
+            "conversation_context_used": result.get("conversation_context_used", False),
             "session_id": session_id,
             "provider": provider,
             "timestamp": datetime.now().isoformat()
