@@ -119,3 +119,16 @@ celerybeat.pid
 .mypy_cache/
 .dmypy.json
 dmypy.json
+
+# Enhanced RAG directories
+enhanced_rag/
+advanced_rag/
+
+# Performance and cache files
+*.cache
+*.tmp
+performance_metrics.json
+
+# Test outputs
+test_results/
+*.test.log

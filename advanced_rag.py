@@ -856,6 +856,10 @@ class AdvancedRAG:
             "embedding_model": "sentence-transformer" if self.embedding_model else "huggingface-api" if self.hf_api_key else "tf-idf"
         }
     
+    def get_stats(self) -> Dict[str, Any]:
+        """Get RAG system statistics (alias for get_performance_stats)"""
+        return self.get_performance_stats()
+    
     def clear_cache(self):
         """Clear the search cache"""
         self.cache.clear()
