@@ -9,7 +9,7 @@ from typing import Optional
 import aiofiles
 
 from processor import FileProcessor
-from analyzer import ContentAnalyzer
+from enhanced_analyzer import EnhancedContentAnalyzer
 from scraper import WebScraper
 
 app = FastAPI(title="Smart Content Agent", version="1.0.0")
@@ -62,13 +62,20 @@ async def upload_file(file: UploadFile = File(...), provider: str = Form("gemini
         if not result or not result.get("content"):
             raise HTTPException(status_code=400, detail="Could not extract content from file")
         
-        # Initialize analyzer with selected provider
-        analyzer = ContentAnalyzer(provider=provider)
+        # Initialize enhanced analyzer with selected provider
+        analyzer = EnhancedContentAnalyzer(provider=provider)
         
-        # Generate recap and questions (async)
+        # Create conversation session
+        session_id = analyzer.create_conversation_session("default", {
+            "file_id": file_id,
+            "filename": file.filename,
+            "provider": provider
+        })
+        
+        # Generate enhanced recap and questions (async)
         import asyncio
-        recap = await analyzer.generate_recap(result["content"])
-        questions = await analyzer.create_questions(result["content"])
+        recap = await analyzer.enhanced_generate_recap(result["content"], "medium", session_id)
+        questions = await analyzer.enhanced_create_questions(result["content"], 5, session_id)
         
         # Clean up uploaded file
         os.remove(file_path)
@@ -80,7 +87,8 @@ async def upload_file(file: UploadFile = File(...), provider: str = Form("gemini
             "content_length": len(result["content"]),
             "recap": recap,
             "quiz": questions,
-            "key_concepts": await analyzer.extract_key_concepts(result["content"])
+            "key_concepts": await analyzer.enhanced_extract_key_concepts(result["content"], session_id),
+            "session_id": session_id
         }
         
     except Exception as e:
@@ -218,6 +226,120 @@ async def ask_learning_question(
             "question": question,
             "provider": provider
         }
+
+# Enhanced endpoints with advanced features
+
+@app.post("/enhanced/ask")
+async def enhanced_ask_question(question: str = Form(...), session_id: str = Form(None), 
+                               provider: str = Form("gemini")):
+    """
+    Enhanced learning question endpoint with conversation context
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer(provider=provider)
+        
+        # Use provided session or create new one
+        if not session_id:
+            session_id = analyzer.create_conversation_session("default")
+        
+        result = await analyzer.enhanced_ask_learning_question(
+            question=question,
+            session_id=session_id
+        )
+        
+        return {
+            "question": question,
+            "answer": result["answer"],
+            "sources": result["sources"],
+            "learning_insights": result["learning_insights"],
+            "question_type": result["question_type"],
+            "confidence": result["confidence"],
+            "rag_context_used": result["rag_context_used"],
+            "conversation_context_used": result["conversation_context_used"],
+            "session_id": session_id,
+            "provider": provider,
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        return {"error": str(e), "question": question, "provider": provider}
+
+@app.get("/enhanced/conversation/{session_id}")
+async def get_conversation_history(session_id: str, limit: int = 10):
+    """
+    Get conversation history for a session
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer()
+        history = analyzer.get_conversation_history(session_id, limit)
+        return {"session_id": session_id, "history": history}
+    except Exception as e:
+        return {"error": str(e), "session_id": session_id}
+
+@app.post("/enhanced/stream")
+async def stream_analysis(content: str = Form(...), analysis_type: str = Form("recap"), 
+                         session_id: str = Form(None)):
+    """
+    Stream analysis results for real-time experience
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer()
+        
+        if not session_id:
+            session_id = analyzer.create_conversation_session("default")
+        
+        # Create streaming response
+        from fastapi.responses import StreamingResponse
+        import json
+        
+        async def generate_stream():
+            async for chunk in analyzer.stream_analysis(content, analysis_type, session_id):
+                yield f"data: {json.dumps(chunk)}\n\n"
+        
+        return StreamingResponse(
+            generate_stream(),
+            media_type="text/plain",
+            headers={"Cache-Control": "no-cache", "Connection": "keep-alive"}
+        )
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/enhanced/metrics")
+async def get_performance_metrics():
+    """
+    Get comprehensive performance metrics
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer()
+        metrics = analyzer.get_performance_metrics()
+        return metrics
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/enhanced/clear-cache")
+async def clear_performance_cache():
+    """
+    Clear all performance caches
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer()
+        analyzer.clear_performance_cache()
+        return {"status": "success", "message": "All caches cleared"}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/enhanced/rag/stats")
+async def get_rag_stats():
+    """
+    Get RAG system statistics
+    """
+    try:
+        analyzer = EnhancedContentAnalyzer()
+        stats = analyzer.advanced_rag.get_stats()
+        return stats
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     import uvicorn

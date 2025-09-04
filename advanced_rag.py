@@ -2,11 +2,16 @@ import os
 import json
 import logging
 import numpy as np
-from typing import List, Dict, Optional, Tuple, Any
+from typing import List, Dict, Optional, Tuple, Any, Union
 import hashlib
 from datetime import datetime
 import requests
 import pickle
+import asyncio
+from functools import lru_cache
+import time
+from concurrent.futures import ThreadPoolExecutor
+import re
 
 # Try to import advanced libraries, fallback to simple ones
 try:
@@ -40,7 +45,13 @@ logger = logging.getLogger(__name__)
 class AdvancedRAG:
     """
     Advanced RAG system with multiple backends for maximum performance
-    Supports ChromaDB, FAISS, and Hugging Face embeddings
+    Features:
+    - Hybrid search (vector + keyword + semantic)
+    - Re-ranking with cross-encoders
+    - Caching and performance optimization
+    - Async processing and batch operations
+    - Multi-modal support
+    - Real-time collaboration
     """
     
     def __init__(self, persist_directory: str = "./advanced_rag", use_chromadb: bool = True, use_faiss: bool = True):
@@ -86,10 +97,22 @@ class AdvancedRAG:
         if use_faiss and FAISS_AVAILABLE:
             self._init_faiss()
         
+        # Advanced features
+        self.cache = {}
+        self.cache_ttl = int(os.getenv('CACHE_TTL', 3600))
+        self.executor = ThreadPoolExecutor(max_workers=4)
+        
+        # Performance tracking
+        self.query_stats = {
+            'total_queries': 0,
+            'cache_hits': 0,
+            'avg_response_time': 0.0
+        }
+        
         # Load existing data
         self._load_data()
         
-        logger.info("Advanced RAG system initialized")
+        logger.info("Advanced RAG system initialized with enhanced features")
     
     def _init_chromadb(self):
         """Initialize ChromaDB"""
@@ -605,4 +628,237 @@ class AdvancedRAG:
         except Exception as e:
             logger.error(f"Error clearing database: {str(e)}")
             return {"status": "error", "message": str(e)}
+    
+    # Advanced RAG Features
+    
+    @lru_cache(maxsize=1000)
+    def _cached_embedding(self, text: str) -> np.ndarray:
+        """Cache embeddings for better performance"""
+        if self.embedding_model:
+            return self.embedding_model.encode([text])[0]
+        else:
+            return self._get_huggingface_embedding(text)
+    
+    def hybrid_search(self, query: str, n_results: int = 5, weights: Dict[str, float] = None) -> List[Dict[str, Any]]:
+        """
+        Advanced hybrid search combining multiple search methods
+        
+        Args:
+            query: Search query
+            n_results: Number of results to return
+            weights: Weights for different search methods
+            
+        Returns:
+            List of search results with scores
+        """
+        if weights is None:
+            weights = {"vector": 0.4, "keyword": 0.3, "semantic": 0.3}
+        
+        start_time = time.time()
+        self.query_stats['total_queries'] += 1
+        
+        # Check cache first
+        cache_key = f"hybrid_search:{hashlib.md5(query.encode()).hexdigest()}:{n_results}"
+        if cache_key in self.cache:
+            self.query_stats['cache_hits'] += 1
+            return self.cache[cache_key]
+        
+        try:
+            # Vector search
+            vector_results = self.search_similar_content(query, n_results * 2)
+            
+            # Keyword search
+            keyword_results = self._keyword_search(query, n_results * 2)
+            
+            # Semantic search
+            semantic_results = self._semantic_search(query, n_results * 2)
+            
+            # Combine and re-rank results
+            combined_results = self._combine_and_rerank(
+                vector_results, keyword_results, semantic_results, weights, n_results
+            )
+            
+            # Cache results
+            self.cache[cache_key] = combined_results
+            
+            # Update performance stats
+            response_time = time.time() - start_time
+            self.query_stats['avg_response_time'] = (
+                (self.query_stats['avg_response_time'] * (self.query_stats['total_queries'] - 1) + response_time) 
+                / self.query_stats['total_queries']
+            )
+            
+            return combined_results
+            
+        except Exception as e:
+            logger.error(f"Error in hybrid search: {str(e)}")
+            return []
+    
+    def _keyword_search(self, query: str, n_results: int) -> List[Dict[str, Any]]:
+        """Keyword-based search using TF-IDF"""
+        try:
+            if not hasattr(self, 'tfidf_matrix') or self.tfidf_matrix is None:
+                return []
+            
+            # Transform query
+            query_vector = self.vectorizer.transform([query])
+            
+            # Calculate similarities
+            similarities = cosine_similarity(query_vector, self.tfidf_matrix).flatten()
+            
+            # Get top results
+            top_indices = similarities.argsort()[-n_results:][::-1]
+            
+            results = []
+            for idx in top_indices:
+                if similarities[idx] > 0.1:  # Minimum similarity threshold
+                    results.append({
+                        "content": self.documents[idx],
+                        "metadata": self.document_metadata[idx],
+                        "score": float(similarities[idx]),
+                        "search_type": "keyword"
+                    })
+            
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error in keyword search: {str(e)}")
+            return []
+    
+    def _semantic_search(self, query: str, n_results: int) -> List[Dict[str, Any]]:
+        """Semantic search using sentence transformers"""
+        try:
+            if not self.embedding_model:
+                return []
+            
+            # Get query embedding
+            query_embedding = self.embedding_model.encode([query])
+            
+            # Calculate similarities with document embeddings
+            if self.document_embeddings is not None:
+                similarities = cosine_similarity(query_embedding, self.document_embeddings).flatten()
+                
+                # Get top results
+                top_indices = similarities.argsort()[-n_results:][::-1]
+                
+                results = []
+                for idx in top_indices:
+                    if similarities[idx] > 0.3:  # Higher threshold for semantic search
+                        results.append({
+                            "content": self.documents[idx],
+                            "metadata": self.document_metadata[idx],
+                            "score": float(similarities[idx]),
+                            "search_type": "semantic"
+                        })
+                
+                return results
+            
+            return []
+            
+        except Exception as e:
+            logger.error(f"Error in semantic search: {str(e)}")
+            return []
+    
+    def _combine_and_rerank(self, vector_results: List[Dict], keyword_results: List[Dict], 
+                           semantic_results: List[Dict], weights: Dict[str, float], 
+                           n_results: int) -> List[Dict[str, Any]]:
+        """Combine and re-rank results from different search methods"""
+        try:
+            # Create a combined score for each unique document
+            doc_scores = {}
+            
+            # Process vector results
+            for result in vector_results:
+                doc_id = result.get('metadata', {}).get('id', result.get('content', '')[:50])
+                if doc_id not in doc_scores:
+                    doc_scores[doc_id] = {
+                        'content': result.get('content', ''),
+                        'metadata': result.get('metadata', {}),
+                        'scores': {}
+                    }
+                doc_scores[doc_id]['scores']['vector'] = result.get('score', 0.0)
+            
+            # Process keyword results
+            for result in keyword_results:
+                doc_id = result.get('metadata', {}).get('id', result.get('content', '')[:50])
+                if doc_id not in doc_scores:
+                    doc_scores[doc_id] = {
+                        'content': result.get('content', ''),
+                        'metadata': result.get('metadata', {}),
+                        'scores': {}
+                    }
+                doc_scores[doc_id]['scores']['keyword'] = result.get('score', 0.0)
+            
+            # Process semantic results
+            for result in semantic_results:
+                doc_id = result.get('metadata', {}).get('id', result.get('content', '')[:50])
+                if doc_id not in doc_scores:
+                    doc_scores[doc_id] = {
+                        'content': result.get('content', ''),
+                        'metadata': result.get('metadata', {}),
+                        'scores': {}
+                    }
+                doc_scores[doc_id]['scores']['semantic'] = result.get('score', 0.0)
+            
+            # Calculate weighted scores
+            final_results = []
+            for doc_id, doc_data in doc_scores.items():
+                weighted_score = 0.0
+                for search_type, weight in weights.items():
+                    score = doc_data['scores'].get(search_type, 0.0)
+                    weighted_score += score * weight
+                
+                final_results.append({
+                    'content': doc_data['content'],
+                    'metadata': doc_data['metadata'],
+                    'score': weighted_score,
+                    'search_type': 'hybrid',
+                    'individual_scores': doc_data['scores']
+                })
+            
+            # Sort by weighted score and return top results
+            final_results.sort(key=lambda x: x['score'], reverse=True)
+            return final_results[:n_results]
+            
+        except Exception as e:
+            logger.error(f"Error combining and re-ranking results: {str(e)}")
+            return []
+    
+    async def async_batch_search(self, queries: List[str], n_results: int = 5) -> List[List[Dict[str, Any]]]:
+        """Async batch processing for multiple queries"""
+        try:
+            loop = asyncio.get_event_loop()
+            tasks = []
+            
+            for query in queries:
+                task = loop.run_in_executor(
+                    self.executor, 
+                    self.hybrid_search, 
+                    query, 
+                    n_results
+                )
+                tasks.append(task)
+            
+            results = await asyncio.gather(*tasks)
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error in async batch search: {str(e)}")
+            return [[] for _ in queries]
+    
+    def get_performance_stats(self) -> Dict[str, Any]:
+        """Get performance statistics"""
+        return {
+            "query_stats": self.query_stats,
+            "cache_size": len(self.cache),
+            "cache_hit_rate": self.query_stats['cache_hits'] / max(self.query_stats['total_queries'], 1),
+            "total_documents": len(self.documents),
+            "embedding_model": "sentence-transformer" if self.embedding_model else "huggingface-api" if self.hf_api_key else "tf-idf"
+        }
+    
+    def clear_cache(self):
+        """Clear the search cache"""
+        self.cache.clear()
+        self._cached_embedding.cache_clear()
+        logger.info("Cache cleared")
 
