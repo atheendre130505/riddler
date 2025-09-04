@@ -27,6 +27,12 @@
         .footer { text-align: center; color: white; margin-top: 40px; padding: 20px; }
         .footer a { color: white; text-decoration: none; }
         .footer a:hover { text-decoration: underline; }
+        .status-indicator { display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #10b981; margin-right: 8px; }
+        .tech-stack { background: white; border-radius: 15px; padding: 30px; margin-bottom: 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .tech-stack h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 20px; color: #2d3748; text-align: center; }
+        .tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .tech-item { text-align: center; padding: 15px; background: #f7fafc; border-radius: 8px; }
+        .tech-item i { font-size: 2rem; color: #667eea; margin-bottom: 10px; }
         @media (max-width: 768px) { .header h1 { font-size: 2rem; } .features { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -34,34 +40,90 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
-            <p>RAG + MCP Powered Learning Platform with Advanced AI Models</p>
+            <p>Advanced RAG + MCP Powered Learning Platform with Cutting-Edge AI Models</p>
+            <p><span class="status-indicator"></span>Live & Operational</p>
         </div>
+        
         <div class="features">
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-robot"></i></div>
-                <h3>Powerful AI Models</h3>
-                <p>Gemini 1.5 Pro, Mistral Large, and Hugging Face models for advanced content analysis.</p>
+                <h3>Advanced AI Models</h3>
+                <p>Gemini 1.5 Pro, Mistral Large, and Hugging Face models with hybrid RAG system for superior content analysis.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-search"></i></div>
-                <h3>Advanced RAG System</h3>
-                <p>168+ document chunks stored in ChromaDB with semantic search capabilities.</p>
+                <h3>Hybrid RAG System</h3>
+                <p>168+ document chunks in ChromaDB with semantic search, TF-IDF vectorization, and cosine similarity matching.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon"><i class="fas fa-comments"></i></div>
                 <h3>Interactive Q&A</h3>
-                <p>Ask learning questions about your content with confidence scoring.</p>
+                <p>Advanced learning questions with confidence scoring, context awareness, and MCP-enhanced reasoning.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                <h3>Performance Optimized</h3>
+                <p>Caching, async processing, streaming responses, and conversation memory for optimal user experience.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-users"></i></div>
+                <h3>Multi-Modal Support</h3>
+                <p>Text, images, and real-time collaboration features for comprehensive learning experiences.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                <h3>Secure & Scalable</h3>
+                <p>Environment-based configuration, rate limiting, and cloud-ready architecture for production use.</p>
             </div>
         </div>
-        <div class="demo-section">
-            <h2><i class="fas fa-rocket"></i> Try It Now!</h2>
-            <p>Experience the power of advanced AI with RAG and MCP integration.</p>
-            <a href="https://github.com/atheendre130505/riddler" class="btn"><i class="fab fa-github"></i> View on GitHub</a>
-            <a href="https://github.com/atheendre130505/riddler#installation" class="btn"><i class="fas fa-download"></i> Get Started</a>
+
+        <div class="tech-stack">
+            <h3><i class="fas fa-cogs"></i> Technology Stack</h3>
+            <div class="tech-grid">
+                <div class="tech-item">
+                    <i class="fab fa-python"></i>
+                    <h4>Python 3.12</h4>
+                    <p>Backend Framework</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-database"></i>
+                    <h4>ChromaDB</h4>
+                    <p>Vector Database</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-brain"></i>
+                    <h4>scikit-learn</h4>
+                    <p>ML Processing</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-cloud"></i>
+                    <h4>FastAPI</h4>
+                    <p>Web Framework</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-rocket"></i>
+                    <h4>Uvicorn</h4>
+                    <p>ASGI Server</p>
+                </div>
+                <div class="tech-item">
+                    <i class="fas fa-magic"></i>
+                    <h4>MCP Protocol</h4>
+                    <p>Context Management</p>
+                </div>
+            </div>
         </div>
+        
+        <div class="demo-section">
+            <h2><i class="fas fa-rocket"></i> Ready to Experience Advanced AI?</h2>
+            <p>Deploy and run the Smart Content Agent with cutting-edge RAG and MCP capabilities.</p>
+            <a href="https://github.com/atheendre130505/riddler" class="btn"><i class="fab fa-github"></i> View Source Code</a>
+            <a href="https://github.com/atheendre130505/riddler#installation" class="btn"><i class="fas fa-download"></i> Get Started</a>
+            <a href="https://github.com/atheendre130505/riddler/blob/main/README.md" class="btn"><i class="fas fa-book"></i> Documentation</a>
+        </div>
+        
         <div class="footer">
-            <p><i class="fas fa-code"></i> Built with ❤️ using the most powerful free AI models available</p>
-            <p><a href="https://github.com/atheendre130505/riddler">GitHub Repository</a> | <a href="https://github.com/atheendre130505/riddler/issues">Report Issues</a></p>
+            <p><i class="fas fa-code"></i> Built with ❤️ using the most advanced AI technologies available</p>
+            <p><a href="https://github.com/atheendre130505/riddler">GitHub Repository</a> | <a href="https://github.com/atheendre130505/riddler/issues">Report Issues</a> | <a href="https://github.com/atheendre130505/riddler/discussions">Discussions</a></p>
         </div>
     </div>
 </body>
