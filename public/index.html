@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Content Agent - Firebase</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .status-card h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .status-success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #38a169;
+        }
+
+        .endpoints {
+            background: #f7fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .endpoints h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .endpoint {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+
+        .method-get {
+            background: #c6f6d5;
+            color: #22543d;
+        }
+
+        .method-post {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .endpoint-description {
+            color: #718096;
+            margin-top: 5px;
+        }
+
+        .test-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .test-section h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+
+        .test-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s ease;
+        }
+
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .response {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            border-left: 4px solid #667eea;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .status-card, .endpoints, .test-section {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
+            <p>AI-Powered Content Analysis Platform - Deployed on Firebase</p>
+        </div>
+
+        <div class="status-card">
+            <h2><i class="fas fa-check-circle"></i> Deployment Status</h2>
+            <div class="status-success">
+                ✅ Successfully deployed on Firebase Functions & Hosting!
+            </div>
+            <p>Your Smart Content Agent is now live and ready to process content.</p>
+        </div>
+
+        <div class="endpoints">
+            <h3><i class="fas fa-code"></i> Available API Endpoints</h3>
+            
+            <div class="endpoint">
+                <span class="endpoint-method method-get">GET</span>
+                <span class="endpoint-path">/api/health</span>
+                <div class="endpoint-description">Health check endpoint to verify the service is running</div>
+            </div>
+
+            <div class="endpoint">
+                <span class="endpoint-method method-post">POST</span>
+                <span class="endpoint-path">/api/upload</span>
+                <div class="endpoint-description">Upload and process files (PDF, DOCX, TXT)</div>
+            </div>
+
+            <div class="endpoint">
+                <span class="endpoint-method method-post">POST</span>
+                <span class="endpoint-path">/api/process-url</span>
+                <div class="endpoint-description">Process web URLs and extract content</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3><i class="fas fa-flask"></i> Test the API</h3>
+            <p>Click the buttons below to test the Firebase Functions endpoints:</p>
+            
+            <button class="test-button" onclick="testHealth()">
+                <i class="fas fa-heartbeat"></i> Test Health Check
+            </button>
+            
+            <button class="test-button" onclick="testUpload()">
+                <i class="fas fa-upload"></i> Test Upload Endpoint
+            </button>
+            
+            <button class="test-button" onclick="testProcessUrl()">
+                <i class="fas fa-link"></i> Test URL Processing
+            </button>
+            
+            <div id="response" class="response" style="display: none;"></div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by Firebase Functions & Hosting | Built with FastAPI & Python</p>
+        </div>
+    </div>
+
+    <script>
+        async function testHealth() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                showResponse('Health Check Response:', data);
+            } catch (error) {
+                showResponse('Error:', { error: error.message });
+            }
+        }
+
+        async function testUpload() {
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ test: true })
+                });
+                const data = await response.json();
+                showResponse('Upload Test Response:', data);
+            } catch (error) {
+                showResponse('Error:', { error: error.message });
+            }
+        }
+
+        async function testProcessUrl() {
+            try {
+                const response = await fetch('/api/process-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        url: 'https://example.com',
+                        provider: 'gemini'
+                    })
+                });
+                const data = await response.json();
+                showResponse('URL Processing Test Response:', data);
+            } catch (error) {
+                showResponse('Error:', { error: error.message });
+            }
+        }
+
+        function showResponse(title, data) {
+            const responseDiv = document.getElementById('response');
+            responseDiv.style.display = 'block';
+            responseDiv.innerHTML = `<strong>${title}</strong>\n${JSON.stringify(data, null, 2)}`;
+        }
+    </script>
+</body>
+</html>
