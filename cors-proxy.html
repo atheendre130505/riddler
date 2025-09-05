@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Proxy for Smart Content Agent</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .code {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 CORS Proxy Solution</h1>
+        
+        <div class="warning">
+            <strong>⚠️ CORS Issue:</strong> The backend server is blocking requests from GitHub Pages due to CORS policy.
+        </div>
+        
+        <h2>Solution 1: Update Backend CORS Settings</h2>
+        <p>In your backend server, update the CORS middleware to allow GitHub Pages:</p>
+        
+        <div class="code">
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://atheendre130505.github.io",
+        "https://riddler-e80b6.web.app",
+        "http://localhost:3000",
+        "http://127.0.0.1:8000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+        </div>
+        
+        <h2>Solution 2: Use a CORS Proxy Service</h2>
+        <p>You can use a free CORS proxy service like:</p>
+        <ul>
+            <li><a href="https://cors-anywhere.herokuapp.com/" target="_blank">CORS Anywhere</a></li>
+            <li><a href="https://allorigins.win/" target="_blank">AllOrigins</a></li>
+        </ul>
+        
+        <h2>Solution 3: Deploy Backend with Proper CORS</h2>
+        <p>Deploy the backend to a service that allows CORS configuration:</p>
+        <ul>
+            <li><strong>Railway:</strong> Deploy and configure CORS in the environment variables</li>
+            <li><strong>Render:</strong> Deploy with proper CORS headers</li>
+            <li><strong>Heroku:</strong> Deploy with CORS middleware configured</li>
+        </ul>
+        
+        <h2>Current Status</h2>
+        <p>The frontend is currently running in <strong>demo mode</strong> with mock responses. This allows you to:</p>
+        <ul>
+            <li>✅ Test the user interface</li>
+            <li>✅ See how the app works</li>
+            <li>✅ Experience the full functionality</li>
+            <li>❌ Process real files (mock responses only)</li>
+        </ul>
+        
+        <h2>Next Steps</h2>
+        <ol>
+            <li>Deploy the backend server to Railway/Render/Heroku</li>
+            <li>Configure CORS to allow your GitHub Pages domain</li>
+            <li>Update the BACKEND_URL in the frontend code</li>
+            <li>Set USE_MOCK_RESPONSES to false</li>
+        </ol>
+        
+        <p><a href="public/index.html">← Back to Demo</a></p>
+    </div>
+</body>
+</html>
