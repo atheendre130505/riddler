@@ -13,34 +13,47 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 import re
 
+# Configure logging first
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Try to import advanced libraries, fallback to simple ones
 try:
     import chromadb
     from chromadb.config import Settings
     CHROMADB_AVAILABLE = True
-except ImportError:
+    logger.info("ChromaDB imported successfully")
+except ImportError as e:
     CHROMADB_AVAILABLE = False
-    logging.warning("ChromaDB not available, using fallback")
+    logger.warning(f"ChromaDB not available: {e}. Using fallback methods.")
+except Exception as e:
+    CHROMADB_AVAILABLE = False
+    logger.warning(f"Error importing ChromaDB: {e}. Using fallback methods.")
 
 try:
     import faiss
     FAISS_AVAILABLE = True
-except ImportError:
+    logger.info("FAISS imported successfully")
+except ImportError as e:
     FAISS_AVAILABLE = False
-    logging.warning("FAISS not available, using fallback")
+    logger.warning(f"FAISS not available: {e}. Using fallback methods.")
+except Exception as e:
+    FAISS_AVAILABLE = False
+    logger.warning(f"Error importing FAISS: {e}. Using fallback methods.")
 
 try:
     from sentence_transformers import SentenceTransformer
     SENTENCE_TRANSFORMERS_AVAILABLE = True
-except ImportError:
+    logger.info("Sentence Transformers imported successfully")
+except ImportError as e:
     SENTENCE_TRANSFORMERS_AVAILABLE = False
-    logging.warning("Sentence Transformers not available, using fallback")
+    logger.warning(f"Sentence Transformers not available: {e}. Using fallback methods.")
+except Exception as e:
+    SENTENCE_TRANSFORMERS_AVAILABLE = False
+    logger.warning(f"Error importing Sentence Transformers: {e}. Using fallback methods.")
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 class AdvancedRAG:
     """
