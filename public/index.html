@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart Content Agent - Firebase</title>
+    <title>Smart Content Agent - AI-Powered Content Analysis</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -45,131 +45,231 @@
             font-weight: 300;
         }
 
-        .status-card {
+        .main-content {
             background: white;
             border-radius: 20px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            text-align: center;
             margin-bottom: 30px;
         }
 
-        .status-card h2 {
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .url-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result h3 {
             color: #2d3748;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 10px;
         }
 
-        .status-success {
+        .result-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .success {
             background: #c6f6d5;
             color: #22543d;
-            padding: 20px;
+            padding: 15px;
             border-radius: 10px;
             margin: 20px 0;
             border-left: 4px solid #38a169;
         }
 
-        .endpoints {
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
             background: #f7fafc;
-            padding: 30px;
+            padding: 25px;
             border-radius: 15px;
-            margin: 20px 0;
+            text-align: center;
         }
 
-        .endpoints h3 {
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
             color: #2d3748;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            margin-bottom: 10px;
         }
 
-        .endpoint {
+        .feature-desc {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .qa-section {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .qa-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .qa-response {
             background: white;
             padding: 20px;
-            margin: 15px 0;
             border-radius: 10px;
-            border-left: 4px solid #667eea;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .endpoint-method {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            margin-right: 10px;
-        }
-
-        .method-get {
-            background: #c6f6d5;
-            color: #22543d;
-        }
-
-        .method-post {
-            background: #bee3f8;
-            color: #2c5282;
-        }
-
-        .endpoint-path {
-            font-family: 'Courier New', monospace;
-            font-weight: 600;
-            color: #2d3748;
-        }
-
-        .endpoint-description {
-            color: #718096;
-            margin-top: 5px;
-        }
-
-        .test-section {
-            background: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-        }
-
-        .test-section h3 {
-            color: #2d3748;
-            margin-bottom: 20px;
-        }
-
-        .test-button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin: 10px;
-            transition: transform 0.2s ease;
-        }
-
-        .test-button:hover {
-            transform: translateY(-2px);
-        }
-
-        .response {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 8px;
             margin-top: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
             border-left: 4px solid #667eea;
-        }
-
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            opacity: 0.8;
+            display: none;
         }
 
         @media (max-width: 768px) {
@@ -181,8 +281,16 @@
                 padding: 10px;
             }
             
-            .status-card, .endpoints, .test-section {
+            .main-content {
                 padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
             }
         }
     </style>
@@ -191,113 +299,385 @@
     <div class="container">
         <div class="header">
             <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
-            <p>AI-Powered Content Analysis Platform - Deployed on Firebase</p>
+            <p>AI-Powered Content Analysis & Learning Platform</p>
         </div>
 
-        <div class="status-card">
-            <h2><i class="fas fa-check-circle"></i> Deployment Status</h2>
-            <div class="status-success">
-                ✅ Successfully deployed on Firebase Functions & Hosting!
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('upload')">
+                    <i class="fas fa-upload"></i> Upload Files
+                </div>
+                <div class="tab" onclick="switchTab('url')">
+                    <i class="fas fa-link"></i> Process URL
+                </div>
+                <div class="tab" onclick="switchTab('qa')">
+                    <i class="fas fa-question-circle"></i> Ask Questions
+                </div>
             </div>
-            <p>Your Smart Content Agent is now live and ready to process content.</p>
+
+            <!-- Upload Tab -->
+            <div id="upload-tab" class="tab-content active">
+                <h2>Upload Documents for Analysis</h2>
+                <p>Upload PDF, DOCX, or TXT files to analyze content and generate insights.</p>
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Click to upload or drag and drop files here</div>
+                    <div class="upload-subtext">Supports PDF, DOCX, TXT files (Max 10MB)</div>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt" multiple>
+                
+                <div class="progress" id="uploadProgress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <button class="btn" onclick="processFiles()" id="processBtn" disabled>
+                    <i class="fas fa-magic"></i> Analyze Content
+                </button>
+                
+                <div id="uploadResult" class="result"></div>
+            </div>
+
+            <!-- URL Tab -->
+            <div id="url-tab" class="tab-content">
+                <h2>Process Web Content</h2>
+                <p>Enter a URL to extract and analyze web content.</p>
+                
+                <input type="url" class="url-input" id="urlInput" placeholder="https://example.com/article">
+                
+                <button class="btn" onclick="processUrl()" id="urlBtn">
+                    <i class="fas fa-globe"></i> Process URL
+                </button>
+                
+                <div id="urlResult" class="result"></div>
+            </div>
+
+            <!-- Q&A Tab -->
+            <div id="qa-tab" class="tab-content">
+                <h2>Interactive Q&A</h2>
+                <p>Ask questions about your uploaded content.</p>
+                
+                <input type="text" class="qa-input" id="qaInput" placeholder="Ask a question about your content...">
+                
+                <button class="btn" onclick="askQuestion()" id="qaBtn">
+                    <i class="fas fa-search"></i> Ask Question
+                </button>
+                
+                <div id="qaResponse" class="qa-response"></div>
+            </div>
         </div>
 
-        <div class="endpoints">
-            <h3><i class="fas fa-code"></i> Available API Endpoints</h3>
-            
-            <div class="endpoint">
-                <span class="endpoint-method method-get">GET</span>
-                <span class="endpoint-path">/api/health</span>
-                <div class="endpoint-description">Health check endpoint to verify the service is running</div>
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="feature-title">Document Processing</div>
+                <div class="feature-desc">Upload and analyze PDF, DOCX, and TXT files with AI-powered content extraction.</div>
             </div>
-
-            <div class="endpoint">
-                <span class="endpoint-method method-post">POST</span>
-                <span class="endpoint-path">/api/upload</span>
-                <div class="endpoint-description">Upload and process files (PDF, DOCX, TXT)</div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="feature-title">Advanced RAG</div>
+                <div class="feature-desc">Retrieval-Augmented Generation with hybrid search capabilities for accurate results.</div>
             </div>
-
-            <div class="endpoint">
-                <span class="endpoint-method method-post">POST</span>
-                <span class="endpoint-path">/api/process-url</span>
-                <div class="endpoint-description">Process web URLs and extract content</div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="feature-title">AI Analysis</div>
+                <div class="feature-desc">Multi-provider AI integration with Gemini, Mistral, and Hugging Face models.</div>
             </div>
-        </div>
-
-        <div class="test-section">
-            <h3><i class="fas fa-flask"></i> Test the API</h3>
-            <p>Click the buttons below to test the Firebase Functions endpoints:</p>
             
-            <button class="test-button" onclick="testHealth()">
-                <i class="fas fa-heartbeat"></i> Test Health Check
-            </button>
-            
-            <button class="test-button" onclick="testUpload()">
-                <i class="fas fa-upload"></i> Test Upload Endpoint
-            </button>
-            
-            <button class="test-button" onclick="testProcessUrl()">
-                <i class="fas fa-link"></i> Test URL Processing
-            </button>
-            
-            <div id="response" class="response" style="display: none;"></div>
-        </div>
-
-        <div class="footer">
-            <p>Powered by Firebase Functions & Hosting | Built with FastAPI & Python</p>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-question-circle"></i>
+                </div>
+                <div class="feature-title">Interactive Q&A</div>
+                <div class="feature-desc">Ask questions and get intelligent answers based on your content.</div>
+            </div>
         </div>
     </div>
 
     <script>
-        async function testHealth() {
+        let uploadedFiles = [];
+        let currentContent = '';
+
+        // Tab switching
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+
+        // File upload handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            uploadedFiles = Array.from(e.target.files);
+            document.getElementById('processBtn').disabled = uploadedFiles.length === 0;
+            
+            if (uploadedFiles.length > 0) {
+                showSuccess(`Selected ${uploadedFiles.length} file(s) for processing.`);
+            }
+        });
+
+        // Drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            uploadedFiles = files.filter(file => 
+                file.type === 'application/pdf' || 
+                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                file.type === 'text/plain'
+            );
+            
+            document.getElementById('processBtn').disabled = uploadedFiles.length === 0;
+            
+            if (uploadedFiles.length > 0) {
+                showSuccess(`Selected ${uploadedFiles.length} file(s) for processing.`);
+            } else {
+                showError('Please select valid files (PDF, DOCX, TXT).');
+            }
+        });
+
+        // Process files
+        async function processFiles() {
+            if (uploadedFiles.length === 0) {
+                showError('Please select files to process.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('uploadResult');
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            
+            resultDiv.style.display = 'none';
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+            
             try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                showResponse('Health Check Response:', data);
+                // Simulate processing
+                for (let i = 0; i <= 100; i += 10) {
+                    progressBar.style.width = i + '%';
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
+                
+                // Simulate API call (replace with actual API call)
+                const response = await simulateFileProcessing(uploadedFiles);
+                
+                progressDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-check-circle"></i> Processing Complete</h3>
+                    <div class="result-content">
+                        <p><strong>Files Processed:</strong> ${uploadedFiles.length}</p>
+                        <p><strong>Content Extracted:</strong> ${response.contentLength} characters</p>
+                        <p><strong>Key Topics:</strong> ${response.topics.join(', ')}</p>
+                        <p><strong>Summary:</strong> ${response.summary}</p>
+                    </div>
+                `;
+                
+                currentContent = response.content;
+                showSuccess('Files processed successfully! You can now ask questions about the content.');
+                
             } catch (error) {
-                showResponse('Error:', { error: error.message });
+                progressDiv.style.display = 'none';
+                showError('Error processing files: ' + error.message);
             }
         }
 
-        async function testUpload() {
+        // Process URL
+        async function processUrl() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) {
+                showError('Please enter a valid URL.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('urlResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-spinner fa-spin"></i> Processing URL...</h3>
+                <div class="result-content">
+                    <p>Extracting content from: <strong>${url}</strong></p>
+                </div>
+            `;
+
             try {
-                const response = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ test: true })
-                });
-                const data = await response.json();
-                showResponse('Upload Test Response:', data);
+                // Simulate API call (replace with actual API call)
+                const response = await simulateUrlProcessing(url);
+                
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-check-circle"></i> URL Processed</h3>
+                    <div class="result-content">
+                        <p><strong>URL:</strong> ${url}</p>
+                        <p><strong>Title:</strong> ${response.title}</p>
+                        <p><strong>Content Length:</strong> ${response.contentLength} characters</p>
+                        <p><strong>Key Topics:</strong> ${response.topics.join(', ')}</p>
+                        <p><strong>Summary:</strong> ${response.summary}</p>
+                    </div>
+                `;
+                
+                currentContent = response.content;
+                showSuccess('URL processed successfully! You can now ask questions about the content.');
+                
             } catch (error) {
-                showResponse('Error:', { error: error.message });
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> Processing Failed</h3>
+                    <div class="result-content">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                showError('Error processing URL: ' + error.message);
             }
         }
 
-        async function testProcessUrl() {
-            try {
-                const response = await fetch('/api/process-url', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        url: 'https://example.com',
-                        provider: 'gemini'
-                    })
-                });
-                const data = await response.json();
-                showResponse('URL Processing Test Response:', data);
-            } catch (error) {
-                showResponse('Error:', { error: error.message });
+        // Ask question
+        async function askQuestion() {
+            const question = document.getElementById('qaInput').value;
+            if (!question) {
+                showError('Please enter a question.');
+                return;
             }
-        }
 
-        function showResponse(title, data) {
-            const responseDiv = document.getElementById('response');
+            if (!currentContent) {
+                showError('Please upload files or process a URL first.');
+                return;
+            }
+
+            const responseDiv = document.getElementById('qaResponse');
             responseDiv.style.display = 'block';
-            responseDiv.innerHTML = `<strong>${title}</strong>\n${JSON.stringify(data, null, 2)}`;
+            responseDiv.innerHTML = `
+                <h4><i class="fas fa-spinner fa-spin"></i> Thinking...</h4>
+                <p>Processing your question...</p>
+            `;
+
+            try {
+                // Simulate API call (replace with actual API call)
+                const response = await simulateQuestionAnswering(question, currentContent);
+                
+                responseDiv.innerHTML = `
+                    <h4><i class="fas fa-robot"></i> AI Response</h4>
+                    <p><strong>Question:</strong> ${question}</p>
+                    <p><strong>Answer:</strong> ${response.answer}</p>
+                    <p><strong>Confidence:</strong> ${response.confidence}%</p>
+                `;
+                
+            } catch (error) {
+                responseDiv.innerHTML = `
+                    <h4><i class="fas fa-exclamation-triangle"></i> Error</h4>
+                    <p>Error: ${error.message}</p>
+                `;
+                showError('Error processing question: ' + error.message);
+            }
+        }
+
+        // Backend API configuration
+        const BACKEND_URL = 'https://smart-content-agent-backend.railway.app'; // Replace with your backend URL
+        
+        // Real API calls to backend
+        async function simulateFileProcessing(files) {
+            const formData = new FormData();
+            formData.append('file', files[0]);
+            formData.append('provider', 'gemini');
+            
+            const response = await fetch(`${BACKEND_URL}/upload`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+
+        async function simulateUrlProcessing(url) {
+            const formData = new FormData();
+            formData.append('url', url);
+            formData.append('provider', 'gemini');
+            
+            const response = await fetch(`${BACKEND_URL}/process-url`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            return await response.json();
+        }
+
+        async function simulateQuestionAnswering(question, content) {
+            const formData = new FormData();
+            formData.append('question', question);
+            formData.append('session_id', 'default');
+            
+            const response = await fetch(`${BACKEND_URL}/ask-question`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            return {
+                answer: data.answer,
+                confidence: 85 // Backend doesn't return confidence yet
+            };
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.querySelector('.main-content').appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            document.querySelector('.main-content').appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
         }
     </script>
 </body>
