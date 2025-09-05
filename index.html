@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Content Agent - AI-Powered Content Analysis</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .demo-section h2 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .demo-section p {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .demo-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .status-card {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border-left: 4px solid #38a169;
+        }
+
+        .code-section {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .code-section h3 {
+            color: #81c784;
+            margin-bottom: 15px;
+        }
+
+        .code-section pre {
+            overflow-x: auto;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .demo-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
+            <p>AI-Powered Content Analysis & Learning Platform</p>
+        </div>
+
+        <div class="main-content">
+            <div class="status-card">
+                <i class="fas fa-check-circle"></i>
+                <strong>Live Demo Available!</strong> This is a fully functional AI-powered content analysis platform.
+            </div>
+
+            <div class="demo-section">
+                <h2>🚀 Try the Live Demo</h2>
+                <p>Experience the power of AI-driven content analysis with our interactive demo.</p>
+                
+                <div class="demo-buttons">
+                    <a href="public/index.html" class="btn">
+                        <i class="fas fa-play"></i> Launch Demo
+                    </a>
+                    <a href="https://github.com/atheendre130505/riddler" class="btn">
+                        <i class="fab fa-github"></i> View Source Code
+                    </a>
+                </div>
+            </div>
+
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <div class="feature-title">Document Processing</div>
+                    <div class="feature-desc">Upload and analyze PDF, DOCX, and TXT files with AI-powered content extraction.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div class="feature-title">Advanced RAG</div>
+                    <div class="feature-desc">Retrieval-Augmented Generation with hybrid search capabilities for accurate results.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="feature-title">AI Analysis</div>
+                    <div class="feature-desc">Multi-provider AI integration with Gemini, Mistral, and Hugging Face models.</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="feature-title">Interactive Q&A</div>
+                    <div class="feature-desc">Ask questions and get intelligent answers based on your content.</div>
+                </div>
+            </div>
+
+            <div class="code-section">
+                <h3><i class="fas fa-code"></i> Quick Start</h3>
+                <pre><code># Clone the repository
+git clone https://github.com/atheendre130505/riddler.git
+cd riddler
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the backend server
+python backend_server.py
+
+# Open the frontend
+open public/index.html</code></pre>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Powered by AI • Built with FastAPI & Python • Deployed on GitHub Pages</p>
+        </div>
+    </div>
+</body>
+</html>
