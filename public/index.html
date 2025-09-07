@@ -293,6 +293,183 @@
                 text-align: center;
             }
         }
+
+        /* Quiz Modal Styles */
+        .quiz-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .quiz-modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 800px;
+            max-height: 90vh;
+            width: 90%;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .quiz-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .quiz-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close {
+            font-size: 2rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+        .quiz-body {
+            padding: 20px;
+        }
+
+        .quiz-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quiz-info p {
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .quiz-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .quiz-section h4 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .question-item {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .question-item h4 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .options {
+            margin: 15px 0;
+        }
+
+        .options label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .options label:hover {
+            background-color: #f8f9fa;
+        }
+
+        .options input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .question-info {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .question-info small {
+            color: #6c757d;
+        }
+
+        .quiz-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
     </style>
 </head>
 <body>
@@ -503,9 +680,20 @@
                     <h3><i class="fas fa-check-circle"></i> Processing Complete</h3>
                     <div class="result-content">
                         <p><strong>Files Processed:</strong> ${uploadedFiles.length}</p>
-                        <p><strong>Content Extracted:</strong> ${response.contentLength} characters</p>
-                        <p><strong>Key Topics:</strong> ${response.topics.join(', ')}</p>
-                        <p><strong>Summary:</strong> ${response.summary}</p>
+                        <p><strong>Content Extracted:</strong> ${response.content_length || response.contentLength || 'N/A'} characters</p>
+                        <p><strong>Key Topics:</strong> ${(response.key_concepts || response.topics || []).join(', ')}</p>
+                        <p><strong>Summary:</strong> ${response.summary || 'No summary available'}</p>
+                        ${response.quiz ? `
+                            <div class="quiz-section">
+                                <h4><i class="fas fa-question-circle"></i> Generated Quiz</h4>
+                                <p><strong>Questions:</strong> ${response.quiz.total_questions || response.quiz.questions?.length || 0}</p>
+                                <p><strong>Difficulty:</strong> ${response.quiz.metadata?.difficulty || 'Medium'}</p>
+                                <p><strong>Estimated Time:</strong> ${response.quiz.estimated_time || response.quiz.metadata?.estimated_time || 'N/A'} minutes</p>
+                                <button onclick="showQuiz('${encodeURIComponent(JSON.stringify(response.quiz))}')" class="btn btn-primary">
+                                    <i class="fas fa-play"></i> Take Quiz
+                                </button>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
                 
@@ -743,6 +931,96 @@
                     answer: "This is a demo response. The backend server is not accessible: " + error.message,
                     confidence: 85
                 };
+            }
+        }
+
+        // Quiz functionality
+        function showQuiz(quizData) {
+            try {
+                const quiz = JSON.parse(decodeURIComponent(quizData));
+                const quizModal = document.createElement('div');
+                quizModal.className = 'quiz-modal';
+                quizModal.innerHTML = `
+                    <div class="quiz-modal-content">
+                        <div class="quiz-header">
+                            <h2><i class="fas fa-question-circle"></i> ${quiz.metadata?.title || 'Generated Quiz'}</h2>
+                            <span class="close" onclick="this.parentElement.parentElement.parentElement.remove()">&times;</span>
+                        </div>
+                        <div class="quiz-body">
+                            <div class="quiz-info">
+                                <p><strong>Questions:</strong> ${quiz.total_questions || quiz.questions?.length || 0}</p>
+                                <p><strong>Difficulty:</strong> ${quiz.metadata?.difficulty || 'Medium'}</p>
+                                <p><strong>Estimated Time:</strong> ${quiz.estimated_time || quiz.metadata?.estimated_time || 'N/A'} minutes</p>
+                            </div>
+                            <div class="quiz-questions">
+                                ${(quiz.questions || []).map((q, index) => `
+                                    <div class="question-item">
+                                        <h4>Question ${index + 1}: ${q.question}</h4>
+                                        ${q.type === 'multiple_choice' && q.options ? `
+                                            <div class="options">
+                                                ${q.options.map((option, i) => `
+                                                    <label><input type="radio" name="q${index}" value="${option}"> ${option}</label>
+                                                `).join('')}
+                                            </div>
+                                        ` : ''}
+                                        ${q.type === 'true_false' ? `
+                                            <div class="options">
+                                                <label><input type="radio" name="q${index}" value="true"> True</label>
+                                                <label><input type="radio" name="q${index}" value="false"> False</label>
+                                            </div>
+                                        ` : ''}
+                                        ${q.type === 'fill_in_blank' ? `
+                                            <input type="text" name="q${index}" placeholder="Your answer...">
+                                        ` : ''}
+                                        ${q.type === 'short_answer' ? `
+                                            <textarea name="q${index}" placeholder="Your answer..." rows="3"></textarea>
+                                        ` : ''}
+                                        <div class="question-info">
+                                            <small><strong>Type:</strong> ${q.type} | <strong>Points:</strong> ${q.points || 2} | <strong>Difficulty:</strong> ${q.difficulty || 'medium'}</small>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            <div class="quiz-actions">
+                                <button onclick="submitQuiz('${encodeURIComponent(JSON.stringify(quiz))}')" class="btn btn-success">
+                                    <i class="fas fa-check"></i> Submit Quiz
+                                </button>
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(quizModal);
+            } catch (error) {
+                showError('Error displaying quiz: ' + error.message);
+            }
+        }
+
+        function submitQuiz(quizData) {
+            try {
+                const quiz = JSON.parse(decodeURIComponent(quizData));
+                const questions = quiz.questions || [];
+                let score = 0;
+                let totalPoints = 0;
+                
+                questions.forEach((q, index) => {
+                    totalPoints += q.points || 2;
+                    const userAnswer = document.querySelector(`input[name="q${index}"], textarea[name="q${index}"]`)?.value;
+                    
+                    if (userAnswer && userAnswer.toLowerCase().trim() === q.correct_answer.toLowerCase().trim()) {
+                        score += q.points || 2;
+                    }
+                });
+                
+                const percentage = Math.round((score / totalPoints) * 100);
+                showSuccess(`Quiz completed! Score: ${score}/${totalPoints} (${percentage}%)`);
+                
+                // Remove quiz modal
+                document.querySelector('.quiz-modal')?.remove();
+            } catch (error) {
+                showError('Error submitting quiz: ' + error.message);
             }
         }
 
