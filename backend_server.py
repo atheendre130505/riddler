@@ -36,6 +36,9 @@ app.add_middleware(
 _rag_system = None
 _analyzer = None
 _file_processor = None
+_enhanced_processor = None
+_quiz_generator = None
+_learning_companion = None
 _scraper = None
 
 def get_rag_system():
@@ -77,6 +80,45 @@ def get_file_processor():
             _file_processor = None
     return _file_processor
 
+def get_enhanced_processor():
+    """Lazy load enhanced processor"""
+    global _enhanced_processor
+    if _enhanced_processor is None:
+        try:
+            from enhanced_processor import EnhancedDocumentProcessor
+            _enhanced_processor = EnhancedDocumentProcessor()
+            logger.info("Enhanced processor initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize enhanced processor: {e}")
+            _enhanced_processor = None
+    return _enhanced_processor
+
+def get_quiz_generator():
+    """Lazy load quiz generator"""
+    global _quiz_generator
+    if _quiz_generator is None:
+        try:
+            from quiz_generator import EnhancedQuizGenerator
+            _quiz_generator = EnhancedQuizGenerator()
+            logger.info("Quiz generator initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize quiz generator: {e}")
+            _quiz_generator = None
+    return _quiz_generator
+
+def get_learning_companion():
+    """Lazy load learning companion"""
+    global _learning_companion
+    if _learning_companion is None:
+        try:
+            from learning_companion import LearningCompanion
+            _learning_companion = LearningCompanion()
+            logger.info("Learning companion initialized")
+        except Exception as e:
+            logger.error(f"Failed to initialize learning companion: {e}")
+            _learning_companion = None
+    return _learning_companion
+
 def get_scraper():
     """Lazy load scraper"""
     global _scraper
@@ -102,7 +144,11 @@ async def root():
             "upload": "/upload",
             "process_url": "/process-url",
             "ask_question": "/ask-question",
-            "stats": "/stats"
+            "stats": "/stats",
+            "enhanced_upload": "/enhanced-upload",
+            "generate_quiz": "/generate-quiz",
+            "start_conversation": "/start-conversation",
+            "chat": "/chat"
         }
     }
 
@@ -132,15 +178,19 @@ async def upload_file(
         # Read file content
         content = await file.read()
         
-        # Process file based on type
-        if file.filename.endswith('.pdf'):
-            processed_content = processor.process_pdf(content)
-        elif file.filename.endswith('.docx'):
-            processed_content = processor.process_docx(content)
-        elif file.filename.endswith('.txt'):
-            processed_content = processor.process_txt(content)
-        else:
-            raise HTTPException(status_code=400, detail="Unsupported file type")
+        # Create temporary file for processing
+        import tempfile
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as temp_file:
+            temp_file.write(content)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Process file using FileProcessor
+            result = processor.process_file(temp_file_path)
+            processed_content = result["content"]
+        finally:
+            # Clean up temporary file
+            os.unlink(temp_file_path)
         
         # Get RAG system and analyzer
         rag = get_rag_system()
@@ -157,16 +207,43 @@ async def upload_file(
             }
         
         # Store in RAG system
-        rag.add_document(processed_content, {"filename": file.filename, "type": "upload"})
-        
-        # Generate analysis
         try:
-            summary = await analyzer.enhanced_generate_recap(processed_content)
-            concepts = await analyzer.enhanced_extract_key_concepts(processed_content)
+            rag.add_document(processed_content, {"filename": file.filename, "type": "upload"})
+            logger.info(f"Document stored in RAG system: {file.filename}")
         except Exception as e:
-            logger.warning(f"AI analysis failed: {e}")
-            summary = "AI analysis not available"
+            logger.error(f"Failed to store document in RAG: {e}")
+        
+        # Generate analysis using the actual content
+        try:
+            logger.info("Generating AI summary...")
+            summary = await analyzer.enhanced_generate_recap(processed_content)
+            logger.info("Summary generated successfully")
+            
+            logger.info("Extracting key concepts...")
+            concepts = await analyzer.enhanced_extract_key_concepts(processed_content)
+            logger.info("Key concepts extracted successfully")
+            
+            # Generate quiz using the actual content
+            quiz_generator = get_quiz_generator()
+            quiz_result = None
+            if quiz_generator:
+                try:
+                    logger.info("Generating quiz from content...")
+                    quiz_result = quiz_generator.generate_quiz(
+                        processed_content, 
+                        "text",
+                        min_questions=10,
+                        max_questions=20
+                    )
+                    logger.info("Quiz generated successfully")
+                except Exception as e:
+                    logger.warning(f"Quiz generation failed: {e}")
+            
+        except Exception as e:
+            logger.error(f"AI analysis failed: {e}")
+            summary = f"AI analysis failed: {str(e)}"
             concepts = ["Content processed successfully"]
+            quiz_result = None
         
         return {
             "status": "success",
@@ -174,7 +251,8 @@ async def upload_file(
             "content_length": len(processed_content),
             "summary": summary,
             "key_concepts": concepts,
-            "message": "File processed and analyzed successfully"
+            "quiz": quiz_result.get("quiz") if quiz_result and quiz_result.get("success") else None,
+            "message": "File processed and analyzed successfully with AI"
         }
         
     except Exception as e:
@@ -259,20 +337,24 @@ async def ask_question(
         if not rag:
             raise HTTPException(status_code=500, detail="RAG system not available")
         
-        # Search for relevant content
+        # Search for relevant content using RAG
         try:
-            search_results = rag.hybrid_search(question, n_results=3)
+            logger.info(f"Searching for relevant content for question: {question[:50]}...")
+            search_results = rag.hybrid_search(question, n_results=5)
             context = "\n".join([doc["content"] for doc in search_results])
+            logger.info(f"Found {len(search_results)} relevant documents")
         except Exception as e:
             logger.warning(f"RAG search failed: {e}")
             context = "No relevant content found"
         
-        # Generate answer
+        # Generate answer using the context from RAG
         try:
+            logger.info("Generating AI response...")
             answer = await analyzer.enhanced_ask_learning_question(question, context, session_id)
+            logger.info("AI response generated successfully")
         except Exception as e:
             logger.warning(f"AI question answering failed: {e}")
-            answer = "I'm sorry, I couldn't process your question at the moment. Please try again later."
+            answer = f"I'm sorry, I couldn't process your question at the moment. Error: {str(e)}"
         
         return {
             "status": "success",
@@ -312,6 +394,167 @@ async def get_stats():
         
     except Exception as e:
         logger.error(f"Error getting stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/enhanced-upload")
+async def enhanced_upload(
+    file: UploadFile = File(...),
+    provider: str = Form("gemini")
+):
+    """Enhanced file upload with comprehensive analysis and quiz generation"""
+    try:
+        logger.info(f"Enhanced processing file: {file.filename}")
+        
+        # Get enhanced processor
+        processor = get_enhanced_processor()
+        if not processor:
+            raise HTTPException(status_code=500, detail="Enhanced processor not available")
+        
+        # Read file content
+        content = await file.read()
+        
+        # Process file with enhanced processor
+        result = processor.process_document(content, file.filename)
+        
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result.get("error", "Processing failed"))
+        
+        # Generate quiz if content is substantial
+        quiz_result = None
+        quiz_generator = get_quiz_generator()
+        if quiz_generator and result.get("content"):
+            try:
+                quiz_result = quiz_generator.generate_quiz(
+                    result["content"], 
+                    result.get("type", "text"),
+                    min_questions=10,
+                    max_questions=20
+                )
+            except Exception as e:
+                logger.warning(f"Quiz generation failed: {e}")
+        
+        # Get RAG system and analyzer for additional analysis
+        rag = get_rag_system()
+        analyzer = get_analyzer()
+        
+        additional_analysis = {}
+        if rag and analyzer and result.get("content"):
+            try:
+                # Store in RAG system
+                rag.add_document(result["content"], {"filename": file.filename, "type": "enhanced_upload"})
+                
+                # Generate AI analysis
+                summary = await analyzer.enhanced_generate_recap(result["content"])
+                concepts = await analyzer.enhanced_extract_key_concepts(result["content"])
+                
+                additional_analysis = {
+                    "ai_summary": summary,
+                    "ai_concepts": concepts
+                }
+            except Exception as e:
+                logger.warning(f"AI analysis failed: {e}")
+        
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "file_type": result.get("type", "unknown"),
+            "analysis": result.get("analysis", {}),
+            "quiz": quiz_result.get("quiz") if quiz_result and quiz_result.get("success") else None,
+            "additional_analysis": additional_analysis,
+            "message": "File processed with enhanced analysis and quiz generation"
+        }
+        
+    except Exception as e:
+        logger.error(f"Error in enhanced upload: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-quiz")
+async def generate_quiz(
+    content: str = Form(...),
+    content_type: str = Form("text"),
+    min_questions: int = Form(10),
+    max_questions: int = Form(20),
+    difficulty: str = Form("medium")
+):
+    """Generate quiz from content"""
+    try:
+        logger.info(f"Generating quiz for content type: {content_type}")
+        
+        quiz_generator = get_quiz_generator()
+        if not quiz_generator:
+            raise HTTPException(status_code=500, detail="Quiz generator not available")
+        
+        result = quiz_generator.generate_quiz(
+            content, content_type, min_questions, max_questions, difficulty
+        )
+        
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result.get("error", "Quiz generation failed"))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error generating quiz: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/start-conversation")
+async def start_conversation(
+    topic: str = Form(...),
+    context: str = Form("{}")
+):
+    """Start a new learning conversation"""
+    try:
+        logger.info(f"Starting conversation about: {topic}")
+        
+        companion = get_learning_companion()
+        if not companion:
+            raise HTTPException(status_code=500, detail="Learning companion not available")
+        
+        # Parse context if provided
+        try:
+            context_dict = json.loads(context) if context else {}
+        except:
+            context_dict = {}
+        
+        result = companion.start_conversation(topic, context_dict)
+        
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result.get("error", "Failed to start conversation"))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error starting conversation: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/chat")
+async def chat(
+    message: str = Form(...),
+    context: str = Form("{}")
+):
+    """Chat with the learning companion"""
+    try:
+        logger.info(f"Processing chat message: {message[:50]}...")
+        
+        companion = get_learning_companion()
+        if not companion:
+            raise HTTPException(status_code=500, detail="Learning companion not available")
+        
+        # Parse context if provided
+        try:
+            context_dict = json.loads(context) if context else {}
+        except:
+            context_dict = {}
+        
+        result = companion.respond_to_question(message, context_dict)
+        
+        if not result.get("success", False):
+            raise HTTPException(status_code=400, detail=result.get("error", "Failed to process message"))
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error processing chat: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":

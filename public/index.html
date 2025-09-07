@@ -605,10 +605,10 @@
         }
 
         // Backend API configuration
-        const BACKEND_URL = 'https://smart-content-agent-backend.railway.app'; // Replace with your backend URL
+        const BACKEND_URL = 'http://127.0.0.1:8000'; // Local backend for testing
         
         // For demo purposes, we'll use mock responses when backend is not accessible
-        const USE_MOCK_RESPONSES = true;
+        const USE_MOCK_RESPONSES = false; // Set to true for demo mode
         
         // API calls with fallback to mock responses
         async function simulateFileProcessing(files) {
@@ -626,6 +626,7 @@
             }
 
             try {
+                console.log('Uploading file to backend:', files[0].name);
                 const formData = new FormData();
                 formData.append('file', files[0]);
                 formData.append('provider', 'gemini');
@@ -636,10 +637,13 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
                 
-                return await response.json();
+                const result = await response.json();
+                console.log('Backend response:', result);
+                return result;
             } catch (error) {
                 console.warn('Backend not accessible, using mock response:', error.message);
                 // Fallback to mock response
@@ -648,7 +652,7 @@
                     status: "success",
                     filename: files[0].name,
                     content_length: 1500,
-                    summary: "This is a demo response. The backend server is not accessible due to CORS policy.",
+                    summary: "This is a demo response. The backend server is not accessible: " + error.message,
                     key_concepts: ["AI", "Machine Learning", "Content Analysis", "RAG"],
                     message: "File processed successfully (Demo Mode - Backend not accessible)"
                 };
@@ -710,6 +714,7 @@
             }
 
             try {
+                console.log('Asking question to backend:', question);
                 const formData = new FormData();
                 formData.append('question', question);
                 formData.append('session_id', 'default');
@@ -720,10 +725,12 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
                 }
                 
                 const data = await response.json();
+                console.log('Backend question response:', data);
                 return {
                     answer: data.answer,
                     confidence: 85 // Backend doesn't return confidence yet
@@ -733,7 +740,7 @@
                 // Fallback to mock response
                 await new Promise(resolve => setTimeout(resolve, 1500));
                 return {
-                    answer: "This is a demo response. The backend server is not accessible due to CORS policy.",
+                    answer: "This is a demo response. The backend server is not accessible: " + error.message,
                     confidence: 85
                 };
             }

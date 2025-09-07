@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Content Agent - Enhanced Learning Companion</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .upload-area {
+            border: 3px dashed #cbd5e0;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f7fafc;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #4a5568;
+        }
+
+        .btn-success {
+            background: #48bb78;
+        }
+
+        .progress {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .result {
+            background: #f7fafc;
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .result h3 {
+            color: #2d3748;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .result-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .quiz-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f0f9ff;
+            border-radius: 10px;
+            border-left: 4px solid #0ea5e9;
+        }
+
+        .quiz-question {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .quiz-options {
+            margin: 15px 0;
+        }
+
+        .quiz-option {
+            padding: 10px 15px;
+            margin: 5px 0;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quiz-option:hover {
+            background: #e2e8f0;
+        }
+
+        .quiz-option.selected {
+            background: #dbeafe;
+            border-color: #3b82f6;
+        }
+
+        .quiz-option.correct {
+            background: #dcfce7;
+            border-color: #22c55e;
+        }
+
+        .quiz-option.incorrect {
+            background: #fef2f2;
+            border-color: #ef4444;
+        }
+
+        .more-questions-btn {
+            background: #0ea5e9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 500px;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8fafc;
+        }
+
+        .chat-message {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 15px;
+            max-width: 80%;
+        }
+
+        .chat-message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+        }
+
+        .chat-message.assistant {
+            background: white;
+            border: 1px solid #e2e8f0;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .success {
+            background: #c6f6d5;
+            color: #22543d;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #38a169;
+        }
+
+        .info {
+            background: #bee3f8;
+            color: #2c5282;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 4px solid #3182ce;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .feature-card {
+            background: #f7fafc;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .feature-desc {
+            color: #718096;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 10px;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-brain"></i> Smart Content Agent</h1>
+            <p>Your AI Learning Companion - Enhanced with Quiz Generation & Conversational Learning</p>
+        </div>
+
+        <div class="main-content">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('upload')">
+                    <i class="fas fa-upload"></i> Upload & Analyze
+                </div>
+                <div class="tab" onclick="switchTab('quiz')">
+                    <i class="fas fa-quiz"></i> Quiz Generator
+                </div>
+                <div class="tab" onclick="switchTab('chat')">
+                    <i class="fas fa-comments"></i> Learning Chat
+                </div>
+                <div class="tab" onclick="switchTab('url')">
+                    <i class="fas fa-link"></i> Process URL
+                </div>
+            </div>
+
+            <!-- Enhanced Upload Tab -->
+            <div id="upload-tab" class="tab-content active">
+                <h2>📚 Upload Documents for Enhanced Analysis</h2>
+                <p>Upload PDF, DOCX, TXT, or image files to get comprehensive analysis, summary, and automatically generated quizzes.</p>
+                
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">Click to upload or drag and drop files here</div>
+                    <div class="upload-subtext">Supports PDF, DOCX, TXT, JPG, PNG files (Max 10MB)</div>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.docx,.txt,.jpg,.jpeg,.png,.gif,.bmp,.webp" multiple>
+                
+                <div class="progress" id="uploadProgress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                
+                <button class="btn" onclick="processFilesEnhanced()" id="processBtn" disabled>
+                    <i class="fas fa-magic"></i> Analyze & Generate Quiz
+                </button>
+                
+                <div id="uploadResult" class="result"></div>
+            </div>
+
+            <!-- Quiz Tab -->
+            <div id="quiz-tab" class="tab-content">
+                <h2>🧠 Quiz Generator</h2>
+                <p>Generate custom quizzes from your content with multiple question types and difficulty levels.</p>
+                
+                <div class="info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Note:</strong> Upload a document first to generate quizzes, or enter custom content below.
+                </div>
+                
+                <textarea id="quizContent" placeholder="Enter content to generate quiz from..." style="width: 100%; height: 200px; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; margin: 20px 0;"></textarea>
+                
+                <div style="display: flex; gap: 10px; margin: 20px 0;">
+                    <select id="difficulty" style="padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                        <option value="easy">Easy</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="hard">Hard</option>
+                        <option value="expert">Expert</option>
+                    </select>
+                    <input type="number" id="minQuestions" placeholder="Min Questions" value="10" min="5" max="50" style="padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                    <input type="number" id="maxQuestions" placeholder="Max Questions" value="20" min="10" max="100" style="padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                </div>
+                
+                <button class="btn" onclick="generateQuiz()">
+                    <i class="fas fa-quiz"></i> Generate Quiz
+                </button>
+                
+                <div id="quizResult" class="result"></div>
+            </div>
+
+            <!-- Learning Chat Tab -->
+            <div id="chat-tab" class="tab-content">
+                <h2>💬 Learning Companion Chat</h2>
+                <p>Have engaging conversations about your content with your AI learning companion. Ask questions, explore concepts, and learn through discussion.</p>
+                
+                <div class="chat-container">
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message assistant">
+                            <strong>Learning Companion:</strong> Hi! I'm your AI learning companion. I'm here to help you explore and understand your content through engaging discussions. What would you like to talk about?
+                        </div>
+                    </div>
+                    <div class="chat-input-container">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Ask me anything about your content..." onkeypress="handleChatKeyPress(event)">
+                        <button class="btn" onclick="sendChatMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- URL Tab -->
+            <div id="url-tab" class="tab-content">
+                <h2>🌐 Process Web Content</h2>
+                <p>Enter a URL to extract and analyze web content with quiz generation.</p>
+                
+                <input type="url" class="url-input" id="urlInput" placeholder="https://example.com/article" style="width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 1rem; margin-bottom: 20px;">
+                
+                <button class="btn" onclick="processUrl()" id="urlBtn">
+                    <i class="fas fa-globe"></i> Process URL
+                </button>
+                
+                <div id="urlResult" class="result"></div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="feature-title">Enhanced Document Processing</div>
+                <div class="feature-desc">Process text and image documents with comprehensive analysis, including reading level, key concepts, and complexity assessment.</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-quiz"></i>
+                </div>
+                <div class="feature-title">Dynamic Quiz Generation</div>
+                <div class="feature-desc">Automatically generate 10+ questions with multiple types: multiple choice, true/false, fill-in-blank, short answer, and essay questions.</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="feature-title">Conversational Learning</div>
+                <div class="feature-desc">Engage in meaningful discussions with your AI learning companion that treats you as an equal and focuses on exploration.</div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="feature-title">Advanced RAG System</div>
+                <div class="feature-desc">Retrieval-Augmented Generation with hybrid search for context-aware responses and deep understanding.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFiles = [];
+        let currentContent = '';
+        let currentQuiz = null;
+        let chatHistory = [];
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // Enhanced file upload handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            uploadedFiles = Array.from(e.target.files);
+            document.getElementById('processBtn').disabled = uploadedFiles.length === 0;
+            
+            if (uploadedFiles.length > 0) {
+                showSuccess(`Selected ${uploadedFiles.length} file(s) for enhanced processing.`);
+            }
+        });
+
+        // Drag and drop
+        const uploadArea = document.querySelector('.upload-area');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = Array.from(e.dataTransfer.files);
+            uploadedFiles = files.filter(file => 
+                file.type.startsWith('image/') ||
+                file.type === 'application/pdf' || 
+                file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+                file.type === 'text/plain'
+            );
+            
+            document.getElementById('processBtn').disabled = uploadedFiles.length === 0;
+            
+            if (uploadedFiles.length > 0) {
+                showSuccess(`Selected ${uploadedFiles.length} file(s) for enhanced processing.`);
+            } else {
+                showError('Please select valid files (PDF, DOCX, TXT, JPG, PNG, etc.).');
+            }
+        });
+
+        // Enhanced file processing
+        async function processFilesEnhanced() {
+            if (uploadedFiles.length === 0) {
+                showError('Please select files to process.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('uploadResult');
+            const progressDiv = document.getElementById('uploadProgress');
+            const progressBar = document.getElementById('progressBar');
+            
+            resultDiv.style.display = 'none';
+            progressDiv.style.display = 'block';
+            progressBar.style.width = '0%';
+            
+            try {
+                // Simulate processing with progress
+                for (let i = 0; i <= 100; i += 10) {
+                    progressBar.style.width = i + '%';
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // Simulate enhanced processing
+                const response = await simulateEnhancedProcessing(uploadedFiles);
+                
+                progressDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-check-circle"></i> Enhanced Analysis Complete</h3>
+                    <div class="result-content">
+                        <p><strong>Files Processed:</strong> ${uploadedFiles.length}</p>
+                        <p><strong>Content Type:</strong> ${response.file_type}</p>
+                        <p><strong>Analysis:</strong></p>
+                        <ul>
+                            <li>Reading Level: ${response.analysis.reading_level || 'N/A'}</li>
+                            <li>Key Topics: ${response.analysis.topics?.join(', ') || 'N/A'}</li>
+                            <li>Complexity Score: ${response.analysis.complexity_score || 'N/A'}/100</li>
+                            <li>Estimated Reading Time: ${response.analysis.estimated_reading_time || 'N/A'} minutes</li>
+                        </ul>
+                        ${response.quiz ? `
+                            <div class="quiz-section">
+                                <h4><i class="fas fa-quiz"></i> Generated Quiz (${response.quiz.total_questions} questions)</h4>
+                                <p><strong>Estimated Time:</strong> ${response.quiz.estimated_time} minutes</p>
+                                <p><strong>Difficulty:</strong> ${response.quiz.difficulty_distribution}</p>
+                                <button class="btn btn-success" onclick="displayQuiz('${response.quiz.metadata.title}')">
+                                    <i class="fas fa-play"></i> Start Quiz
+                                </button>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                
+                currentContent = response.content || 'Demo content from uploaded files...';
+                currentQuiz = response.quiz;
+                
+                showSuccess('Files processed successfully! You can now take the quiz or chat about the content.');
+                
+            } catch (error) {
+                progressDiv.style.display = 'none';
+                showError('Error processing files: ' + error.message);
+            }
+        }
+
+        // Quiz generation
+        async function generateQuiz() {
+            const content = document.getElementById('quizContent').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const minQuestions = parseInt(document.getElementById('minQuestions').value);
+            const maxQuestions = parseInt(document.getElementById('maxQuestions').value);
+            
+            if (!content.trim()) {
+                showError('Please enter content to generate quiz from.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('quizResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-spinner fa-spin"></i> Generating Quiz...</h3>
+                <div class="result-content">
+                    <p>Creating ${minQuestions}-${maxQuestions} questions at ${difficulty} difficulty level...</p>
+                </div>
+            `;
+
+            try {
+                const response = await simulateQuizGeneration(content, difficulty, minQuestions, maxQuestions);
+                
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-check-circle"></i> Quiz Generated Successfully</h3>
+                    <div class="result-content">
+                        <p><strong>Title:</strong> ${response.quiz.metadata.title}</p>
+                        <p><strong>Questions:</strong> ${response.quiz.total_questions}</p>
+                        <p><strong>Estimated Time:</strong> ${response.quiz.estimated_time} minutes</p>
+                        <p><strong>Difficulty Distribution:</strong> ${JSON.stringify(response.quiz.difficulty_distribution)}</p>
+                        <button class="btn btn-success" onclick="displayQuiz('${response.quiz.metadata.title}')">
+                            <i class="fas fa-play"></i> Start Quiz
+                        </button>
+                    </div>
+                `;
+                
+                currentQuiz = response.quiz;
+                showSuccess('Quiz generated successfully!');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> Quiz Generation Failed</h3>
+                    <div class="result-content">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                showError('Error generating quiz: ' + error.message);
+            }
+        }
+
+        // Display quiz
+        function displayQuiz(title) {
+            if (!currentQuiz) {
+                showError('No quiz available to display.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('quizResult');
+            resultDiv.style.display = 'block';
+            
+            let quizHTML = `
+                <h3><i class="fas fa-quiz"></i> ${title}</h3>
+                <div class="result-content">
+                    <p><strong>Total Questions:</strong> ${currentQuiz.total_questions}</p>
+                    <p><strong>Estimated Time:</strong> ${currentQuiz.estimated_time} minutes</p>
+            `;
+
+            currentQuiz.questions.forEach((question, index) => {
+                quizHTML += `
+                    <div class="quiz-question">
+                        <h4>Question ${index + 1}: ${question.question}</h4>
+                        <div class="quiz-options">
+                `;
+
+                if (question.type === 'multiple_choice') {
+                    question.options.forEach((option, optIndex) => {
+                        quizHTML += `
+                            <div class="quiz-option" onclick="selectOption(${index}, ${optIndex})">
+                                ${String.fromCharCode(65 + optIndex)}. ${option}
+                            </div>
+                        `;
+                    });
+                } else if (question.type === 'true_false') {
+                    quizHTML += `
+                        <div class="quiz-option" onclick="selectOption(${index}, true)">True</div>
+                        <div class="quiz-option" onclick="selectOption(${index}, false)">False</div>
+                    `;
+                } else if (question.type === 'fill_in_blank') {
+                    quizHTML += `
+                        <input type="text" placeholder="Your answer..." style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;">
+                    `;
+                } else if (question.type === 'short_answer') {
+                    quizHTML += `
+                        <textarea placeholder="Your answer..." style="width: 100%; height: 100px; padding: 10px; border: 2px solid #e2e8f0; border-radius: 8px;"></textarea>
+                    `;
+                }
+
+                quizHTML += `
+                        </div>
+                        <p><strong>Points:</strong> ${question.points}</p>
+                    </div>
+                `;
+            });
+
+            quizHTML += `
+                    <button class="more-questions-btn" onclick="generateMoreQuestions()">
+                        <i class="fas fa-plus"></i> Generate More Questions
+                    </button>
+                </div>
+            `;
+
+            resultDiv.innerHTML = quizHTML;
+        }
+
+        // Chat functionality
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+
+            // Add user message to chat
+            addChatMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            const typingId = addChatMessage('Thinking...', 'assistant', true);
+
+            try {
+                const response = await simulateChatResponse(message);
+                
+                // Remove typing indicator
+                removeChatMessage(typingId);
+                
+                // Add assistant response
+                addChatMessage(response.message, 'assistant');
+                
+                if (response.suggestions && response.suggestions.length > 0) {
+                    addChatMessage(`Suggestions: ${response.suggestions.join(', ')}`, 'assistant');
+                }
+                
+            } catch (error) {
+                removeChatMessage(typingId);
+                addChatMessage('Sorry, I encountered an error. Please try again.', 'assistant');
+            }
+        }
+
+        function addChatMessage(message, sender, isTemporary = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender}`;
+            messageDiv.innerHTML = `<strong>${sender === 'user' ? 'You' : 'Learning Companion'}:</strong> ${message}`;
+            
+            if (isTemporary) {
+                messageDiv.id = 'typing-' + Date.now();
+            }
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            return messageDiv.id;
+        }
+
+        function removeChatMessage(messageId) {
+            const message = document.getElementById(messageId);
+            if (message) {
+                message.remove();
+            }
+        }
+
+        // Simulate API calls
+        async function simulateEnhancedProcessing(files) {
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            return {
+                file_type: 'text',
+                content: 'Enhanced content analysis with comprehensive insights...',
+                analysis: {
+                    reading_level: 'Intermediate',
+                    topics: ['AI', 'Machine Learning', 'Content Analysis', 'RAG', 'Learning'],
+                    complexity_score: 75,
+                    estimated_reading_time: 8
+                },
+                quiz: {
+                    metadata: {
+                        title: 'Quiz on Uploaded Content',
+                        description: 'Comprehensive quiz with 15 questions'
+                    },
+                    total_questions: 15,
+                    estimated_time: 30,
+                    difficulty_distribution: { easy: 3, medium: 8, hard: 4 },
+                    questions: generateSampleQuestions(15)
+                }
+            };
+        }
+
+        async function simulateQuizGeneration(content, difficulty, minQuestions, maxQuestions) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            const numQuestions = Math.floor(Math.random() * (maxQuestions - minQuestions + 1)) + minQuestions;
+            return {
+                quiz: {
+                    metadata: {
+                        title: `Custom Quiz - ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Level`,
+                        description: `Quiz generated from custom content`
+                    },
+                    total_questions: numQuestions,
+                    estimated_time: numQuestions * 2,
+                    difficulty_distribution: { [difficulty]: numQuestions },
+                    questions: generateSampleQuestions(numQuestions)
+                }
+            };
+        }
+
+        async function simulateChatResponse(message) {
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            const responses = [
+                "That's a great question! Let me think about this with you...",
+                "I love your curiosity! This is exactly the kind of thinking that leads to breakthroughs.",
+                "You know what? That's a really interesting perspective. Let's explore it together.",
+                "I'm excited to dive into this with you! What made you think about this?",
+                "That's such a thoughtful question! I can tell you're really engaging with the material."
+            ];
+            
+            return {
+                message: responses[Math.floor(Math.random() * responses.length)],
+                suggestions: [
+                    "Let's break this down step by step",
+                    "What examples come to mind?",
+                    "How does this connect to what you already know?"
+                ]
+            };
+        }
+
+        function generateSampleQuestions(count) {
+            const questions = [];
+            for (let i = 0; i < count; i++) {
+                questions.push({
+                    id: i + 1,
+                    type: 'multiple_choice',
+                    question: `Sample question ${i + 1}?`,
+                    options: ['Option A', 'Option B', 'Option C', 'Option D'],
+                    correct_answer: 'Option A',
+                    points: 2
+                });
+            }
+            return questions;
+        }
+
+        function selectOption(questionIndex, optionIndex) {
+            // Handle quiz option selection
+            console.log(`Selected option ${optionIndex} for question ${questionIndex}`);
+        }
+
+        function generateMoreQuestions() {
+            showInfo('Generating more questions... This feature will be available in the full version!');
+        }
+
+        // Utility functions
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            document.querySelector('.main-content').appendChild(successDiv);
+            setTimeout(() => successDiv.remove(), 5000);
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            document.querySelector('.main-content').appendChild(errorDiv);
+            setTimeout(() => errorDiv.remove(), 5000);
+        }
+
+        function showInfo(message) {
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info';
+            infoDiv.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+            document.querySelector('.main-content').appendChild(infoDiv);
+            setTimeout(() => infoDiv.remove(), 5000);
+        }
+
+        // URL processing (simplified for demo)
+        async function processUrl() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) {
+                showError('Please enter a valid URL.');
+                return;
+            }
+
+            const resultDiv = document.getElementById('urlResult');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `
+                <h3><i class="fas fa-spinner fa-spin"></i> Processing URL...</h3>
+                <div class="result-content">
+                    <p>Extracting content from: <strong>${url}</strong></p>
+                </div>
+            `;
+
+            try {
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-check-circle"></i> URL Processed</h3>
+                    <div class="result-content">
+                        <p><strong>URL:</strong> ${url}</p>
+                        <p><strong>Content Type:</strong> Web Article</p>
+                        <p><strong>Analysis:</strong> Demo analysis of web content</p>
+                        <button class="btn btn-success" onclick="generateQuizFromUrl('${url}')">
+                            <i class="fas fa-quiz"></i> Generate Quiz from URL
+                        </button>
+                    </div>
+                `;
+                
+                showSuccess('URL processed successfully! You can now generate a quiz or chat about the content.');
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <h3><i class="fas fa-exclamation-triangle"></i> Processing Failed</h3>
+                    <div class="result-content">
+                        <p>Error: ${error.message}</p>
+                    </div>
+                `;
+                showError('Error processing URL: ' + error.message);
+            }
+        }
+
+        function generateQuizFromUrl(url) {
+            document.getElementById('quizContent').value = `Content from ${url} - This is a demo of how quiz generation would work with URL content.`;
+            switchTab('quiz');
+        }
+    </script>
+</body>
+</html>
+
