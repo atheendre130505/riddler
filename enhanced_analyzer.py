@@ -6,17 +6,40 @@ from typing import List, Dict, Optional, Any, AsyncGenerator
 import time
 from datetime import datetime
 
-from analyzer import ContentAnalyzer
 from advanced_rag import AdvancedRAG
-from performance_optimizer import performance_optimizer, cached, async_cached, rate_limited
-from user_experience import user_experience_manager
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+class ContentAnalyzer:
+    """Base content analyzer class"""
+    
+    def __init__(self, provider: str = "gemini", api_key: Optional[str] = None, 
+                 enable_mcp: bool = True, enable_rag: bool = True):
+        self.provider = provider
+        self.api_key = api_key
+        self.enable_mcp = enable_mcp
+        self.enable_rag = enable_rag
+        
+        # Initialize AI provider
+        if provider == "gemini":
+            try:
+                import google.generativeai as genai
+                if api_key:
+                    genai.configure(api_key=api_key)
+                else:
+                    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+                self.model = genai.GenerativeModel('gemini-pro')
+                logger.info("Gemini AI initialized")
+            except Exception as e:
+                logger.error(f"Failed to initialize Gemini: {e}")
+                self.model = None
+        else:
+            self.model = None
+
 class EnhancedContentAnalyzer(ContentAnalyzer):
     """
-    Enhanced content analyzer with advanced RAG, performance optimization, and user experience features
+    Enhanced content analyzer with advanced RAG
     """
     
     def __init__(self, provider: str = "gemini", api_key: Optional[str] = None, 
@@ -39,19 +62,12 @@ class EnhancedContentAnalyzer(ContentAnalyzer):
             use_faiss=True
         )
         
-        # Performance optimization
-        self.performance_optimizer = performance_optimizer
-        
-        # User experience management
-        self.user_experience = user_experience_manager
-        
         logger.info("Enhanced content analyzer initialized")
     
-    @async_cached(ttl=3600)
     async def enhanced_generate_recap(self, content: str, length: str = "medium", 
                                     session_id: str = None) -> str:
         """
-        Enhanced recap generation with advanced RAG and streaming
+        Enhanced recap generation with advanced RAG
         
         Args:
             content: Text content to summarize
@@ -62,419 +78,250 @@ class EnhancedContentAnalyzer(ContentAnalyzer):
             Generated summary
         """
         try:
-            # Track analytics
-            self.user_experience.track_analytics("recap_generation", {
-                "length": length,
-                "content_length": len(content),
-                "session_id": session_id
-            })
+            if not self.model:
+                return self._generate_mock_recap(content, length)
             
-            # Use advanced RAG for better context
-            rag_results = self.advanced_rag.hybrid_search(content, n_results=3)
-            context = "\n".join([r.get("content", "") for r in rag_results])
+            # Add content to RAG system for context
+            if self.enable_rag and self.advanced_rag:
+                self.advanced_rag.add_document(content, metadata={"type": "content", "session_id": session_id})
             
-            # Get conversation context if session exists
-            conversation_context = ""
-            if session_id:
-                conversation_context = self.user_experience.get_conversation_context(session_id)
-            
-            # Enhanced prompt with RAG and conversation context
-            context_info = f"\n\nRelevant context from similar content:\n{context}" if context else ""
-            conversation_info = f"\n\nPrevious conversation:\n{conversation_context}" if conversation_context else ""
-            
+            # Generate summary using AI
             prompt = f"""
-            Please provide a comprehensive summary of the following content {self._get_length_instruction(length)}. 
-            Focus on the main points, key concepts, and important details. 
-            Make it clear and easy to understand.
-            {context_info}
-            {conversation_info}
+            Please provide a {length} summary of the following content:
             
-            Content:
             {content}
             
-            Summary:
+            The summary should be:
+            - Clear and concise
+            - Capture the main points
+            - Be appropriate for learning purposes
             """
             
-            if self.use_mock:
-                return self._generate_enhanced_mock_recap(content, length, context, {})
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, self.model.generate_content, prompt
+            )
             
-            # Truncate content if too long
-            max_chars = 8000
-            if len(content) > max_chars:
-                content = content[:max_chars] + "..."
-            
-            response = self._call_ai_api(prompt, max_tokens=300, temperature=0.3)
-            
-            # Add to conversation if session exists
-            if session_id:
-                self.user_experience.add_assistant_message(
-                    session_id, 
-                    f"Generated {length} summary", 
-                    {"type": "recap", "length": length}
-                )
-            
-            return response.strip()
+            return response.text if response and response.text else self._generate_mock_recap(content, length)
             
         except Exception as e:
             logger.error(f"Error generating enhanced recap: {str(e)}")
-            return self._generate_enhanced_mock_recap(content, length, "", {})
+            return self._generate_mock_recap(content, length)
     
-    @async_cached(ttl=1800)
     async def enhanced_create_questions(self, content: str, count: int = 10, 
                                       session_id: str = None) -> List[Dict]:
         """
-        Enhanced question generation with advanced RAG and streaming
+        Enhanced question generation with advanced RAG
         
         Args:
-            content: Text content to create questions from
+            content: Text content to generate questions from
             count: Number of questions to generate
             session_id: Optional session ID for conversation context
             
         Returns:
-            List of question dictionaries
+            List of generated questions
         """
         try:
-            # Track analytics
-            self.user_experience.track_analytics("question_generation", {
-                "count": count,
-                "content_length": len(content),
-                "session_id": session_id
-            })
+            if not self.model:
+                return self._generate_mock_questions(content, count)
             
-            # Use advanced RAG for better context
-            rag_results = self.advanced_rag.hybrid_search(content, n_results=5)
-            context = "\n".join([r.get("content", "") for r in rag_results])
+            # Add content to RAG system for context
+            if self.enable_rag and self.advanced_rag:
+                self.advanced_rag.add_document(content, metadata={"type": "content", "session_id": session_id})
             
-            # Get conversation context if session exists
-            conversation_context = ""
-            if session_id:
-                conversation_context = self.user_experience.get_conversation_context(session_id)
-            
-            # Enhanced prompt with RAG and conversation context
-            context_info = f"\n\nRelevant context from similar content:\n{context}" if context else ""
-            conversation_info = f"\n\nPrevious conversation:\n{conversation_context}" if conversation_context else ""
-            
+            # Generate questions using AI
             prompt = f"""
-            Create {count} quiz questions based on the following content. 
-            Include a mix of question types:
-            - Multiple choice (4 options each)
-            - True/False
-            - Short answer
+            Generate {count} diverse questions based on the following content:
             
-            For each question, provide:
-            1. The question text
-            2. Question type (multiple_choice, true_false, short_answer)
-            3. Options (for multiple choice)
-            4. Correct answer
-            5. Explanation (brief)
-            {context_info}
-            {conversation_info}
-            
-            Format as JSON array with this structure:
-            [
-                {{
-                    "question": "Question text here",
-                    "type": "multiple_choice",
-                    "options": ["A", "B", "C", "D"],
-                    "correct_answer": "A",
-                    "explanation": "Brief explanation"
-                }}
-            ]
-            
-            Content:
             {content}
+            
+            Create questions that:
+            - Test understanding of key concepts
+            - Include multiple choice, true/false, and short answer questions
+            - Are appropriate for learning and assessment
+            - Cover different difficulty levels
+            
+            Return the questions in JSON format with the following structure:
+            {{
+                "questions": [
+                    {{
+                        "question": "Question text",
+                        "type": "multiple_choice|true_false|short_answer|fill_in_blank",
+                        "options": ["option1", "option2", "option3", "option4"] (for multiple choice),
+                        "correct_answer": "correct answer",
+                        "explanation": "explanation of the answer",
+                        "difficulty": "easy|medium|hard",
+                        "points": 2
+                    }}
+                ]
+            }}
             """
             
-            if self.use_mock:
-                return self._generate_enhanced_mock_questions(content, count, context, [])
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, self.model.generate_content, prompt
+            )
             
-            # Truncate content if too long
-            max_chars = 6000
-            if len(content) > max_chars:
-                content = content[:max_chars] + "..."
-            
-            response = self._call_ai_api(prompt, max_tokens=1500, temperature=0.5)
-            
-            # Clean up the response
-            if response.startswith('```json'):
-                response = response[7:]
-            if response.endswith('```'):
-                response = response[:-3]
-            
-            questions = json.loads(response)
-            validated_questions = self._validate_questions(questions)
-            
-            # Add to conversation if session exists
-            if session_id:
-                self.user_experience.add_assistant_message(
-                    session_id, 
-                    f"Generated {len(validated_questions)} quiz questions", 
-                    {"type": "questions", "count": len(validated_questions)}
-                )
-            
-            return validated_questions
+            if response and response.text:
+                try:
+                    # Try to parse JSON response
+                    result = json.loads(response.text)
+                    return result.get("questions", self._generate_mock_questions(content, count))
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, return mock questions
+                    return self._generate_mock_questions(content, count)
+            else:
+                return self._generate_mock_questions(content, count)
             
         except Exception as e:
             logger.error(f"Error creating enhanced questions: {str(e)}")
-            return self._generate_enhanced_mock_questions(content, count, "", [])
+            return self._generate_mock_questions(content, count)
     
-    @async_cached(ttl=7200)
     async def enhanced_extract_key_concepts(self, content: str, 
                                           session_id: str = None) -> List[str]:
         """
         Enhanced key concept extraction with advanced RAG
         
         Args:
-            content: Text content to analyze
+            content: Text content to extract concepts from
             session_id: Optional session ID for conversation context
             
         Returns:
             List of key concepts
         """
         try:
-            # Track analytics
-            self.user_experience.track_analytics("concept_extraction", {
-                "content_length": len(content),
-                "session_id": session_id
-            })
-            
-            # Use advanced RAG for better context
-            rag_results = self.advanced_rag.hybrid_search(content, n_results=3)
-            context = "\n".join([r.get("content", "") for r in rag_results])
-            
-            # Enhanced prompt with RAG context
-            context_info = f"\n\nRelevant context from similar content:\n{context}" if context else ""
-            
-            prompt = f"""
-            Extract the 8-12 most important key concepts, topics, or themes from the following content.
-            Return them as a simple list, one concept per line.
-            Focus on the main ideas, important terms, and central topics.
-            {context_info}
-            
-            Content:
-            {content}
-            
-            Key concepts:
-            """
-            
-            if self.use_mock:
+            if not self.model:
                 return self._extract_mock_concepts(content)
             
-            # Truncate content if too long
-            max_chars = 6000
-            if len(content) > max_chars:
-                content = content[:max_chars] + "..."
+            # Add content to RAG system for context
+            if self.enable_rag and self.advanced_rag:
+                self.advanced_rag.add_document(content, metadata={"type": "content", "session_id": session_id})
             
-            response = self._call_ai_api(prompt, max_tokens=200, temperature=0.3)
+            # Extract concepts using AI
+            prompt = f"""
+            Extract the key concepts from the following content:
             
-            # Parse concepts
-            concepts = []
-            for line in response.split('\n'):
-                concept = line.strip()
-                if concept and not concept.startswith('-') and not concept.startswith('•'):
-                    # Remove numbering if present
-                    import re
-                    concept = re.sub(r'^\d+\.\s*', '', concept)
-                    concepts.append(concept)
+            {content}
             
-            # Add to conversation if session exists
-            if session_id:
-                self.user_experience.add_assistant_message(
-                    session_id, 
-                    f"Extracted {len(concepts)} key concepts", 
-                    {"type": "concepts", "count": len(concepts)}
-                )
+            Return a list of the most important concepts, terms, or topics.
+            Focus on concepts that are central to understanding the content.
+            """
             
-            return concepts[:12]  # Limit to 12 concepts
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, self.model.generate_content, prompt
+            )
+            
+            if response and response.text:
+                # Parse the response to extract concepts
+                concepts = []
+                lines = response.text.strip().split('\n')
+                for line in lines:
+                    line = line.strip()
+                    if line and not line.startswith('#') and not line.startswith('*'):
+                        # Remove numbering and bullet points
+                        concept = line.lstrip('0123456789.-* ').strip()
+                        if concept:
+                            concepts.append(concept)
+                return concepts[:10]  # Limit to 10 concepts
+            else:
+                return self._extract_mock_concepts(content)
             
         except Exception as e:
-            logger.error(f"Error extracting enhanced key concepts: {str(e)}")
+            logger.error(f"Error extracting key concepts: {str(e)}")
             return self._extract_mock_concepts(content)
     
-    async def enhanced_ask_learning_question(self, question: str, content_id: str = None, 
-                                           context: str = None, session_id: str = None) -> Dict[str, Any]:
+    async def enhanced_ask_learning_question(self, question: str, context: str = "", 
+                                           session_id: str = None) -> str:
         """
-        Enhanced learning Q&A with advanced RAG, streaming, and conversation context
+        Enhanced learning question answering with advanced RAG
         
         Args:
-            question: The user's learning question
-            content_id: Optional content ID to retrieve from RAG
-            context: Optional additional context
+            question: User's question
+            context: Additional context
             session_id: Optional session ID for conversation context
             
         Returns:
-            Dictionary with answer, sources, and learning insights
+            AI-generated answer
         """
         try:
-            # Track analytics
-            self.user_experience.track_analytics("learning_question", {
-                "question_length": len(question),
-                "has_content_id": bool(content_id),
-                "has_context": bool(context),
-                "session_id": session_id
-            })
+            if not self.model:
+                return self._generate_mock_answer(question)
             
-            # Add user question to conversation if session exists
-            if session_id:
-                self.user_experience.add_user_message(session_id, question)
+            # Search for relevant context using RAG
+            relevant_context = ""
+            if self.enable_rag and self.advanced_rag and context:
+                try:
+                    search_results = self.advanced_rag.hybrid_search(question, k=3)
+                    if search_results:
+                        relevant_context = "\n".join([result.get("content", "") for result in search_results])
+                except Exception as e:
+                    logger.warning(f"RAG search failed: {e}")
             
-            # Get relevant context from advanced RAG
-            rag_results = []
-            if content_id:
-                rag_results = self.advanced_rag.search_similar_content(f"content_id:{content_id}", n_results=3)
-            else:
-                rag_results = self.advanced_rag.hybrid_search(question, n_results=5)
-            
-            # Get conversation context
-            conversation_context = ""
-            if session_id:
-                conversation_context = self.user_experience.get_conversation_context(session_id)
-            
-            # Build comprehensive prompt
-            rag_context = "\n\n".join([r.get("content", "") for r in rag_results[:3]])
-            
+            # Generate answer using AI
             prompt = f"""
-            You are an expert learning assistant. Answer the following learning question using the provided context, 
-            your knowledge, and conversation history.
+            Answer the following question in a helpful, educational way:
             
-            LEARNING QUESTION: {question}
+            Question: {question}
             
-            RELEVANT CONTEXT FROM DOCUMENTS:
-            {rag_context[:2000]}
+            Context: {context}
+            Relevant Information: {relevant_context}
             
-            CONVERSATION HISTORY:
-            {conversation_context[:1000]}
-            
-            ADDITIONAL CONTEXT:
-            {context or "None provided"}
-            
-            INSTRUCTIONS:
-            1. Provide a comprehensive, educational answer focused on learning
-            2. Structure your response with clear explanations and examples
-            3. Include learning insights and connections to broader concepts
-            4. Reference the conversation history when relevant
-            5. If the question is not learning-related, politely redirect to educational topics
-            
-            Please provide a detailed, educational response that helps the user learn and understand the topic better.
+            Please provide a clear, informative answer that helps with learning.
+            If you don't have enough information, say so and suggest where to find more details.
             """
             
-            if self.use_mock:
-                return self._generate_mock_learning_answer(question, rag_results)
+            response = await asyncio.get_event_loop().run_in_executor(
+                None, self.model.generate_content, prompt
+            )
             
-            # Use AI API for comprehensive answers
-            response = self._call_ai_api(prompt, max_tokens=2048, temperature=0.7)
-            
-            # Extract sources and learning insights
-            sources = [{"type": "document", "content": r.get("content", "")[:200]} for r in rag_results[:3]]
-            if conversation_context:
-                sources.append({"type": "conversation", "content": conversation_context[:200]})
-            
-            result = {
-                "answer": response,
-                "sources": sources,
-                "learning_insights": self._extract_learning_insights(response),
-                "question_type": self._classify_question_type(question),
-                "confidence": self._calculate_confidence(rag_results, {}),
-                "rag_context_used": len(rag_results) > 0,
-                "conversation_context_used": bool(conversation_context)
-            }
-            
-            # Add assistant response to conversation if session exists
-            if session_id:
-                self.user_experience.add_assistant_message(
-                    session_id, 
-                    response, 
-                    {"type": "learning_answer", "confidence": result["confidence"]}
-                )
-            
-            return result
+            return response.text if response and response.text else self._generate_mock_answer(question)
             
         except Exception as e:
-            logger.error(f"Error answering enhanced learning question: {str(e)}")
-            return {
-                "answer": f"I apologize, but I encountered an error while processing your question: {str(e)}",
-                "sources": [],
-                "learning_insights": [],
-                "question_type": "error",
-                "confidence": 0.0,
-                "rag_context_used": False,
-                "conversation_context_used": False
-            }
+            logger.error(f"Error answering learning question: {str(e)}")
+            return self._generate_mock_answer(question)
     
-    async def stream_analysis(self, content: str, analysis_type: str, 
-                            session_id: str = None) -> AsyncGenerator[Dict[str, Any], None]:
-        """
-        Stream analysis results for real-time user experience
+    def _generate_mock_recap(self, content: str, length: str) -> str:
+        """Generate a mock recap when AI is not available"""
+        words = content.split()
+        if length == "brief":
+            summary_length = min(50, len(words))
+        elif length == "detailed":
+            summary_length = min(200, len(words))
+        else:  # medium
+            summary_length = min(100, len(words))
         
-        Args:
-            content: Content to analyze
-            analysis_type: Type of analysis ("recap", "questions", "concepts")
-            session_id: Optional session ID
-            
-        Yields:
-            Analysis chunks
-        """
-        try:
-            # Create streaming response
-            stream_id = self.user_experience.create_streaming_response(session_id or "default")
-            
-            # Send initial chunk
-            yield {"type": "start", "analysis_type": analysis_type, "stream_id": stream_id}
-            
-            # Process based on analysis type
-            if analysis_type == "recap":
-                result = await self.enhanced_generate_recap(content, session_id=session_id)
-                yield {"type": "chunk", "content": result}
-            elif analysis_type == "questions":
-                questions = await self.enhanced_create_questions(content, session_id=session_id)
-                for i, question in enumerate(questions):
-                    yield {"type": "chunk", "content": f"Question {i+1}: {question.get('question', '')}"}
-            elif analysis_type == "concepts":
-                concepts = await self.enhanced_extract_key_concepts(content, session_id=session_id)
-                for concept in concepts:
-                    yield {"type": "chunk", "content": f"• {concept}"}
-            
-            # Send completion chunk
-            yield {"type": "complete", "analysis_type": analysis_type}
-            
-        except Exception as e:
-            logger.error(f"Error in streaming analysis: {str(e)}")
-            yield {"type": "error", "error": str(e)}
+        return " ".join(words[:summary_length]) + "..." if len(words) > summary_length else content
     
-    def get_performance_metrics(self) -> Dict[str, Any]:
-        """Get comprehensive performance metrics"""
-        return {
-            "analyzer_metrics": {
-                "provider": self.provider,
-                "use_mock": self.use_mock,
-                "enable_mcp": self.enable_mcp,
-                "enable_rag": self.enable_rag
-            },
-            "rag_metrics": self.advanced_rag.get_performance_stats(),
-            "performance_metrics": self.performance_optimizer.get_metrics(),
-            "user_experience_metrics": self.user_experience.get_analytics()
-        }
+    def _generate_mock_questions(self, content: str, count: int) -> List[Dict]:
+        """Generate mock questions when AI is not available"""
+        questions = []
+        words = content.split()
+        
+        for i in range(min(count, 5)):  # Limit to 5 mock questions
+            questions.append({
+                "question": f"Question {i+1}: What is the main topic discussed in this content?",
+                "type": "multiple_choice",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "correct_answer": "Option A",
+                "explanation": "This is a mock question for demonstration purposes.",
+                "difficulty": "medium",
+                "points": 2
+            })
+        
+        return questions
     
-    def _get_length_instruction(self, length: str) -> str:
-        """Get length instruction for prompts"""
-        length_instructions = {
-            "brief": "in 2-3 sentences",
-            "medium": "in 4-6 sentences", 
-            "detailed": "in 8-12 sentences"
-        }
-        return length_instructions.get(length, length_instructions["medium"])
+    def _extract_mock_concepts(self, content: str) -> List[str]:
+        """Extract mock concepts when AI is not available"""
+        words = content.split()
+        # Simple concept extraction based on word frequency
+        word_freq = {}
+        for word in words:
+            word = word.lower().strip('.,!?;:"()[]{}')
+            if len(word) > 3:  # Only consider words longer than 3 characters
+                word_freq[word] = word_freq.get(word, 0) + 1
+        
+        # Return top 5 most frequent words as concepts
+        concepts = sorted(word_freq.items(), key=lambda x: x[1], reverse=True)[:5]
+        return [concept[0] for concept in concepts]
     
-    def create_conversation_session(self, user_id: str, context: Dict[str, Any] = None) -> str:
-        """Create a new conversation session"""
-        return self.user_experience.create_conversation(user_id, context)
-    
-    def get_conversation_history(self, session_id: str, limit: int = 10) -> List[Dict[str, Any]]:
-        """Get conversation history"""
-        messages = self.user_experience.conversation_memory.get_session_history(session_id, limit)
-        return [{"role": msg.role, "content": msg.content, "timestamp": msg.timestamp.isoformat()} for msg in messages]
-    
-    def clear_performance_cache(self):
-        """Clear all performance caches"""
-        self.performance_optimizer.clear_cache()
-        self.advanced_rag.clear_cache()
-        logger.info("All performance caches cleared")
+    def _generate_mock_answer(self, question: str) -> str:
+        """Generate a mock answer when AI is not available"""
+        return f"This is a mock answer to: {question}. The AI service is not available, but this demonstrates the functionality."
